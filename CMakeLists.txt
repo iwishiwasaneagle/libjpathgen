@@ -15,6 +15,7 @@ add_clang_format_target()
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif ()
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 message(STATUS "Started CMake for ${PROJECT_NAME} v${PROJECT_VERSION}...\n")
 
 if (UNIX)
