@@ -1,0 +1,9 @@
+include pyproject.toml requirements.txt setup.cfg setup.py LICENSE.txt README.md CMakeLists.txt
+recursive-include src/ *.cpp
+recursive-include include/jpathgen *.h
+
+exclude MANIFEST.in
+
+recursive-include lib/ *.cpp *.h *.tpp
+include lib/cubpackpp/cmake/*
+include lib/cubpackpp/CMakeLists.txt

@@ -1,0 +1,3 @@
+[submodule "extern/cubpackpp"]
+	path = extern/cubpackpp
+	url = git@github.com:iwishiwasaneagle/cubpackpp.git
