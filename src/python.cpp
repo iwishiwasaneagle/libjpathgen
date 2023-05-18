@@ -23,7 +23,9 @@ PYBIND11_MODULE(_libjpathgen, m)
       .def(py::init<Eigen::Ref<MUS>, Eigen::Ref<COVS>>())
       .def(py::init<STLMUS, STLCOVS>())
       .def("__len__", [](MultiModalBivariateGaussian& mmbg) { return mmbg.length(); })
-      .def("__call__", [](MultiModalBivariateGaussian& mmbg, double x, double y) { return mmbg(x, y); });
+      .def("__call__", [](MultiModalBivariateGaussian& mmbg, double x, double y) { return mmbg(x, y); })
+      .def_property_readonly("_mus", &MultiModalBivariateGaussian::getMus)
+      .def_property_readonly("_covs", &MultiModalBivariateGaussian::getCovs);
 
   m.def(
       "integrate_over_buffered_line",

@@ -26,10 +26,18 @@ namespace jpathgen
      private:
       int N;
       MUS _mus;
+
+     public:
+      const MUS& getMus() const;
+      const COVS& getCovs() const;
+
+     private:
       COVS _covs;
 
      protected:
       double eval_single_bivar_gaussian(int gauss_ind, double x, double y);
+
+
 
      public:
       double operator()(double x, double y);

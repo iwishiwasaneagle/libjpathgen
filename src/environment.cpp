@@ -72,5 +72,13 @@ namespace jpathgen{
     {
       return N;
     }
+    const MUS& MultiModalBivariateGaussian::getMus() const
+    {
+      return _mus;
+    }
+    const COVS& MultiModalBivariateGaussian::getCovs() const
+    {
+      return _covs;
+    }
   }
 }
