@@ -48,7 +48,7 @@ if(1)
     )
     target_link_libraries(
             ${LIB_NAME}
-            PRIVATE
+            PUBLIC
             ${BULLET_LIBRARIES}
             Eigen3::Eigen
             GEOS::geos
@@ -126,6 +126,7 @@ if (${PROJECT_NAME}_BUILD_EXECUTABLE)
             Eigen3::Eigen
             GEOS::geos
             cubpackpp::cubpackpp
+            ${LIB_NAME}
     )
     target_include_directories(
             ${EXE_NAME}
@@ -149,7 +150,7 @@ endif ()
 # running the CMake build, to control building the Python wrapper. This allows
 # the C++ project to be installed, standalone, when using the standard CMake
 # build flow.
-if (DEFINED SKBUILD)
+if (DEFINED SKBUILD OR DEFINED DEV)
     # prevent an unused variable warning
     set(ignoreMe "${SKBUILD}")
     set(PYBIND11_FINDPYTHON ON)
@@ -189,4 +190,10 @@ if (DEFINED SKBUILD)
                 "$ORIGIN/${CMAKE_INSTALL_LIBDIR}")
     endif ()
 
+endif ()
+
+if (${PROJECT_NAME}_ENABLE_UNIT_TESTING)
+    enable_testing()
+    message(STATUS "Build unit tests for the project. Tests should always be found in the test folder\n")
+    add_subdirectory(test)
 endif ()

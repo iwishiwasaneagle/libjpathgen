@@ -15,30 +15,26 @@
 
 #include <Eigen/Core>
 
-using CAS = geos::geom::CoordinateArraySequence;
-using cubpackpp::REGION_COLLECTION;
-using cubpackpp::TRIANGLE;
-using geos::geom::Geometry;
-using geos::geom::GeometryFactory;
-using geos::geom::LineString;
-using geos::geom::MultiPolygon;
-using geos::geom::Polygon;
-using Pt = cubpackpp::Point;
-
 namespace jpathgen
 {
   namespace geometry
   {
-    extern GeometryFactory* _global_factory;
+    using CAS = geos::geom::CoordinateArraySequence;
 
-    std::unique_ptr<CAS> coord_sequence_from_array(std::vector<std::pair<double, double>> coords);
-    std::unique_ptr<CAS> coord_sequence_from_array(Eigen::Matrix<double, 2, Eigen::Dynamic> coords);
-    std::unique_ptr<CAS> coord_sequence_from_array(std::vector<Coordinate> coords);
-    std::unique_ptr<LineString> create_linestring(std::unique_ptr<CAS> cl);
-    std::unique_ptr<Geometry> buffer_linestring(std::unique_ptr<LineString> ls, double d = 2.5);
-    std::unique_ptr<Geometry> triangulate_polygon(std::unique_ptr<Geometry> poly);
+    typedef Eigen::Matrix<double, Eigen::Dynamic, 2> EigenCoords;
+    typedef std::vector<std::pair<double,double>> STLCoords;
+    typedef std::vector<Coordinate> GeosCoords;
 
-    void geos_to_cubpack(std::unique_ptr<Geometry> geoms, REGION_COLLECTION& out_region);
+    extern geos::geom::GeometryFactory* _global_factory;
+
+    std::unique_ptr<CAS> coord_sequence_from_array(STLCoords coords);
+    std::unique_ptr<CAS> coord_sequence_from_array(EigenCoords coords);
+    std::unique_ptr<CAS> coord_sequence_from_array(GeosCoords coords);
+    std::unique_ptr<geos::geom::LineString> create_linestring(std::unique_ptr<CAS> cl);
+    std::unique_ptr<geos::geom::Geometry> buffer_linestring(std::unique_ptr<geos::geom::LineString> ls, double d = 2.5);
+    std::unique_ptr<geos::geom::Geometry> triangulate_polygon(std::unique_ptr<Geometry> poly);
+
+    void geos_to_cubpack(std::unique_ptr<geos::geom::Geometry> geoms, cubpackpp::REGION_COLLECTION& out_region);
   }  // namespace geometry
 }  // namespace jpathgen
 

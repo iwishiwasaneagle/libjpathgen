@@ -13,7 +13,13 @@ if __name__ == "__main__":
         setup(
             packages=['libjpathgen'],
             package_dir={'': 'src'},
-            cmake_install_dir='src/libjpathgen'
+            cmake_install_dir='src/libjpathgen',
+            cmake_args=[
+                "-DJPATHGEN_BUILD_EXECUTABLE=OFF"
+                "-DJPATHGEN_ENABLE_UNIT_TESTING=OFF"
+                "-DJPATHGEN_VERBOSE_OUTPUT=OFF"
+            ]
+
         )
     except:  # noqa
         print(

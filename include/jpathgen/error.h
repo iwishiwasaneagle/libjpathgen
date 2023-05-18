@@ -11,9 +11,7 @@ namespace jpathgen
   {
     if (b)
     {
-      ::std::cerr << message << ::std::endl;
-      ::std::cerr.flush();
-      abort();
+      throw message;
     };
   }
 }  // namespace jpathgen

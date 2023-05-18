@@ -8,16 +8,21 @@
 
 #include "jpathgen/error.h"
 
-using geos::geom::Coordinate;
-using geos::triangulate::polygon::ConstrainedDelaunayTriangulator;
 
 namespace jpathgen
 {
   namespace geometry
   {
+    using geos::geom::Coordinate;
+    using geos::geom::LineString;
+    using geos::triangulate::polygon::ConstrainedDelaunayTriangulator;
+    using Pt = cubpackpp::Point;
+    using cubpackpp::TRIANGLE;
+    using cubpackpp::REGION_COLLECTION;
+
     GeometryFactory* _global_factory;
 
-    std::unique_ptr<CAS> coord_sequence_from_array(Eigen::Matrix<double, 2, Eigen::Dynamic> coords)
+    std::unique_ptr<CAS> coord_sequence_from_array(EigenCoords coords)
     {
       Error(coords.size() == 0, "Coordinate sequence is empty.");
       auto cas = std::make_unique<CAS>();
@@ -32,7 +37,7 @@ namespace jpathgen
       }
       return cas;
     }
-    std::unique_ptr<CAS> coord_sequence_from_array(std::vector<std::pair<double, double>> coords)
+    std::unique_ptr<CAS> coord_sequence_from_array(STLCoords coords)
     {
       Error(coords.size() == 0, "Coordinate sequence is empty.");
       auto cas = std::make_unique<CAS>();
