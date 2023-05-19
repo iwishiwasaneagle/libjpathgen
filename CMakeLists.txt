@@ -7,6 +7,8 @@ project(
 if (PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
     message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there.\n")
 endif ()
+string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWERCASE)
+string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPERCASE)
 include(GNUInstallDirs)
 include(cmake/StandardSettings.cmake)
 include(cmake/StaticAnalyzers.cmake)
@@ -15,14 +17,15 @@ add_clang_format_target()
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif ()
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
+set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -O0 ")
+
 message(STATUS "Started CMake for ${PROJECT_NAME} v${PROJECT_VERSION}...\n")
 
 if (UNIX)
     add_compile_options("$<$<CONFIG:DEBUG>:-D_DEBUG>")    #this will allow to use same _DEBUG macro available in both Linux as well as Windows - MSCV environment. Easy to put Debug specific code.
 endif (UNIX)
-string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWERCASE)
-string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPERCASE)
 
 set(EXE_NAME ${PROJECT_NAME_UPPERCASE}_EXE)
 set(LIB_NAME ${PROJECT_NAME_LOWERCASE})
@@ -117,8 +120,8 @@ if(1)
     )
 endif()
 
-
-if (${PROJECT_NAME}_BUILD_EXECUTABLE)
+if (${PROJECT_NAME_UPPERCASE}_BUILD_EXECUTABLE)
+    message(STATUS "Adding executable ${EXE_NAME}")
     add_executable(${EXE_NAME} ${exe_sources})
     target_link_libraries(
             ${EXE_NAME}
@@ -193,7 +196,7 @@ if (DEFINED SKBUILD OR DEFINED DEV)
 
 endif ()
 
-if (${PROJECT_NAME}_ENABLE_UNIT_TESTING)
+if (${PROJECT_NAME_UPPERCASE}_ENABLE_UNIT_TESTING)
     enable_testing()
     message(STATUS "Build unit tests for the project. Tests should always be found in the test folder\n")
     add_subdirectory(test)
