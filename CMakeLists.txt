@@ -30,7 +30,6 @@ message(STATUS ${LIB_NAME})
 set(PY_NAME _lib${PROJECT_NAME_LOWERCASE})
 
 
-find_package(Bullet CONFIG REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(GEOS CONFIG REQUIRED)
 add_subdirectory(extern/cubpackpp)
@@ -50,7 +49,6 @@ if(1)
     target_link_libraries(
             ${LIB_NAME}
             PUBLIC
-            ${BULLET_LIBRARIES}
             Eigen3::Eigen
             GEOS::geos
             cubpackpp::cubpackpp
@@ -123,7 +121,6 @@ if (${PROJECT_NAME}_BUILD_EXECUTABLE)
     target_link_libraries(
             ${EXE_NAME}
             PRIVATE
-            ${BULLET_LIBRARIES}
             Eigen3::Eigen
             GEOS::geos
             cubpackpp::cubpackpp
@@ -169,7 +166,6 @@ if (DEFINED SKBUILD OR DEFINED DEV)
     target_link_libraries(
             ${PY_NAME}
             PRIVATE
-            ${BULLET_LIBRARIES}
             Eigen3::Eigen
             GEOS::geos
             cubpackpp::cubpackpp
