@@ -38,17 +38,18 @@ def test_MMBG_00_is_maxima(mmbg):
 def test_MMBG_vectorized_call(mmbg, inp):
     x, y = inp
     out = mmbg(x, y)
-    assert out.size  == x.size
+    assert len(out) == len(x)
     assert not np.isnan(out).any()
 
 
-@pytest.mark.parametrize("inp", [np.meshgrid(np.linspace(0, 1, 3), np.linspace(0, 1, 3))])
+@pytest.mark.parametrize("inp", [np.meshgrid(np.linspace(0, 1, 10), np.linspace(0, 1, 10))])
 def test_MMBG_vectorized_call_has_same_result(mmbg, inp):
     x, y = inp
     act = mmbg(x, y)
 
     exp = np.empty(x.shape)
-    for xi, yi in np.ndindex(x.shape):
+    xis, yis = np.meshgrid(np.arange(len(x)), np.arange(len(y)))
+    for xi, yi in zip(xis.flatten(), yis.flatten()):
         exp[xi, yi] = mmbg(x[xi, yi], y[xi, yi])
 
     assert np.allclose(exp, act)

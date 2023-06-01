@@ -23,9 +23,8 @@ PYBIND11_MODULE(_libjpathgen, m)
       .def(py::init<Eigen::Ref<MUS>, Eigen::Ref<COVS>>())
       .def(py::init<STLMUS, STLCOVS>())
       .def("__len__", [](MultiModalBivariateGaussian& mmbg) { return mmbg.length(); })
-      .def("__call__", [](MultiModalBivariateGaussian& mmbg, double x, double y) {
-             return mmbg(x,y); })
-      .def("__call__", [](MultiModalBivariateGaussian& mmbg, Eigen::Ref<EigenMatrixXdRowMajor> x, Eigen::Ref<EigenMatrixXdRowMajor> y) { return mmbg(x, y); })
+      .def("__call__", [](MultiModalBivariateGaussian& mmbg, double x, double y) { return mmbg(x, y); })
+      .def("__call__", py::vectorize([](MultiModalBivariateGaussian& mmbg, double x, double y) { return mmbg(x, y); }))
       .def(
           "__repr__",
           [](MultiModalBivariateGaussian& mmbg)
