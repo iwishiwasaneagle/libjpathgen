@@ -5,7 +5,8 @@
 option(${PROJECT_NAME_UPPERCASE}_BUILD_EXECUTABLE "Build the project as an executable, rather than a library." OFF)
 option(${PROJECT_NAME_UPPERCASE}_BUILD_PYTHON_BINDINGS "Build the python bindings using pybind11." ON)
 option(${PROJECT_NAME_UPPERCASE}_WARNINGS_AS_ERRORS "Treat compiler warnings as errors." OFF)
-option(${PROJECT_NAME_UPPERCASE}_ENABLE_UNIT_TESTING "Enable unit tests for the projects (from the `test` subfolder)." ON)
+option(${PROJECT_NAME_UPPERCASE}_ENABLE_UNIT_TESTING "Enable unit tests for the projects (from the `test` subfolder)." OFF)
+option(${PROJECT_NAME_UPPERCASE}_ENABLE_FUZZING "Enable unit tests for the projects (from the `test/fuzzing` subfolder)." OFF)
 
 
 #

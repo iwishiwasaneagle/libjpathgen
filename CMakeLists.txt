@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.16)
 project(
         "jpathgen"
         VERSION 0.1.0
@@ -115,15 +115,16 @@ if(1)
     )
 endif()
 
-
-if (${PROJECT_NAME}_BUILD_EXECUTABLE)
+if (${${PROJECT_NAME_UPPERCASE}_BUILD_EXECUTABLE})
     add_executable(${EXE_NAME} ${exe_sources})
+    find_package(CLI11 CONFIG REQUIRED)
     target_link_libraries(
             ${EXE_NAME}
             PRIVATE
             Eigen3::Eigen
             GEOS::geos
             cubpackpp::cubpackpp
+            CLI11::CLI11
             ${LIB_NAME}
     )
     target_include_directories(
@@ -189,8 +190,16 @@ if (DEFINED SKBUILD OR DEFINED DEV)
 
 endif ()
 
-if (${PROJECT_NAME}_ENABLE_UNIT_TESTING)
+
+
+if (${PROJECT_NAME_UPPERCASE}_ENABLE_UNIT_TESTING)
     enable_testing()
     message(STATUS "Build unit tests for the project. Tests should always be found in the test folder\n")
     add_subdirectory(test)
+endif ()
+
+
+if(${PROJECT_NAME_UPPERCASE}_ENABLE_FUZZING)
+    message(STATUS "Build fuzzing tests for the project. Fuzzing tests should always be found in the test/fuzzing folder\n")
+    add_subdirectory(test/fuzzing)
 endif ()
