@@ -26,3 +26,9 @@ set(test_sources
         src/environment_test.cpp
         src/integration_test.cpp
         )
+
+set(fuzz_sources
+        variable_length_gmm.cpp
+        variable_length_path.cpp
+        variable_length_gmm_and_path.cpp
+)
