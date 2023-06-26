@@ -32,6 +32,16 @@ SCENARIO("The integration function is called with the various allowed types", "[
         REQUIRE(integrate_over_buffered_line(fn1, coords) > -INFINITY);
       }
     }
+    WHEN("A rectangle is passed"){
+      THEN("A double is returned without error"){
+        REQUIRE(integrate_over_rect(fn1, 0,10,0,10) > 0 );
+      }
+
+      THEN("The area of the bounds is returned when the function always returns 1"){
+        double act = integrate_over_rect(fn1, 0,10,0,10);
+        REQUIRE(act == 100);
+      }
+    }
   }
   GIVEN("A MultiModalBivariateGaussian"){
     MU mu = MU::Zero();
@@ -48,6 +58,11 @@ SCENARIO("The integration function is called with the various allowed types", "[
       STLCoords coords = {{0,0},{0,1},{10,10}};
       THEN("A double is returned without error"){
         REQUIRE(integrate_over_buffered_line(mmbg, coords) > -INFINITY);
+      }
+    }
+    WHEN("A rectangle is passed"){
+      THEN("A double is returned without error"){
+        REQUIRE(integrate_over_rect(mmbg, 0,10,0,10) > 0 );
       }
     }
   }

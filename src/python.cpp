@@ -50,4 +50,12 @@ PYBIND11_MODULE(_libjpathgen, m)
       "integrate_over_buffered_line",
       static_cast<double (*)(MultiModalBivariateGaussian, jpathgen::geometry::EigenCoords, double)>(
           &integrate_over_buffered_line));
+
+  m.def(
+      "integrate_over_rect",
+      static_cast<double (*)(Function, double,double,double,double)>(&integrate_over_rect));
+  m.def(
+      "integrate_over_rect",
+      static_cast<double (*)(MultiModalBivariateGaussian, double,double,double,double)>(
+          &integrate_over_rect));
 }

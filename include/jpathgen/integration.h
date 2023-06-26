@@ -26,12 +26,21 @@ namespace jpathgen
 
     template<typename T>
     double
+    _integration_over_region_collections(cubpackpp::Function fn,cubpackpp::REGION_COLLECTION rc);
+
+    template<typename T>
+    double
     _integration_over_buffered_line(T g, std::unique_ptr<geos::geom::CoordinateArraySequence> cs, double d);
 
     double integrate_over_buffered_line(function::Function f, geometry::EigenCoords coords, double d = DEFAULT_D);
     double integrate_over_buffered_line(function::Function f, geometry::STLCoords coords, double d = DEFAULT_D);
     double integrate_over_buffered_line(environment::MultiModalBivariateGaussian g, geometry::EigenCoords coords, double d = DEFAULT_D);
     double integrate_over_buffered_line(environment::MultiModalBivariateGaussian g, geometry::STLCoords coords, double d = DEFAULT_D);
+
+    template<typename T>
+    double _integrate_over_rect(T t, double left, double right, double bottom, double top);
+    double integrate_over_rect(environment::MultiModalBivariateGaussian g, double left, double right, double bottom, double top);
+    double integrate_over_rect(function::Function f, double left, double right, double bottom, double top);
   }  // namespace integration
 }  // namespace jpathgen
 #endif  // JDRONES_INTEGRATION_H

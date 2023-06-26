@@ -2,7 +2,7 @@
 #   SPDX-License-Identifier: GPL-3.0-only
 import pytest
 import numpy as np
-from libjpathgen import MultiModalBivariateGaussian
+from libjpathgen import MultiModalBivariateGaussian, integrate_over_rect
 
 
 @pytest.fixture(params=[np.eye(2)])
@@ -53,3 +53,19 @@ def test_MMBG_vectorized_call_has_same_result(mmbg, inp):
         exp[xi, yi] = mmbg(x[xi, yi], y[xi, yi])
 
     assert np.allclose(exp, act)
+
+
+@pytest.mark.parametrize("bounds,exp", [
+    [(0.,1.,0.,1.),1.],
+    [(0.,2.,0.,1.),2.],
+    [(0.,2.,0.,2.),4.],
+    [(1.,2.,0.,1.),1.],
+    [(100.,200.,50.,150.),100.*100.],
+])
+def test_rect_integration(bounds,exp):
+    def f(x,y):
+        return 1
+
+    act = integrate_over_rect(f, *bounds)
+
+    assert np.isclose(act,exp)
