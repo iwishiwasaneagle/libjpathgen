@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  run-tests:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            git build-essential cmake lcov \
+            libeigen3-dev pybind11-dev
+
+      - name: Install libgeos
+        run: |
+          sudo apt-get install -y software-properties-common
+          sudo apt-add-repository -y ppa:ubuntugis/ubuntugis-unstable
+          sudo apt-get update
+          sudo apt-get install -y libgeos++-dev libgeos-dev libgeos3.11.1
+
+      - name: Install Catch2
+        run: |
+          git clone --branch v3.4.0 --depth 1 https://github.com/catchorg/Catch2.git
+          cd Catch2
+          cmake -Bbuild -H. -DBUILD_TESTING=OFF 
+          sudo cmake --build build/ --target install -j $(nproc)
+
+      - name: Build C++
+        run: |
+          cmake -B build \
+            -DJPATHGEN_ENABLE_UNIT_TESTING=ON \
+            -DJPATHGEN_ENABLE_CODE_COVERAGE=ON
+          cmake --build build -j $(nproc)
+
+      - name: Run tests
+        run: |
+          ctest --output-on-failure --test-dir build
+
+      - name: Prepare files for codecov
+        run: |
+          lcov --capture --directory build --output-file coverage.info
+          lcov --remove coverage.info --output-file coverage.info '/usr/*' '*/tests/*' '*/extern/*'
+
+      - name: Upload code test coverage report
+        uses: codecov/codecov-action@v3.1.1
+        if: ${{ (github.actor != 'dependabot[bot]') && ( !env.ACT ) }}
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.xml,./coverage.info
+          fail_ci_if_error: true
+
+      - name: Install as python package
+        run: pip install .[test]
+
+      - name: Run pytest
+        run: pytest test/python

@@ -11,12 +11,6 @@ find_package(Eigen3 CONFIG REQUIRED)
 include(CTest)
 include(Catch)
 
-if (${CMAKE_PROJECT_NAME}_ENABLE_CODE_COVERAGE)
-  target_compile_options(${CMAKE_PROJECT_NAME} PUBLIC -O0 -g -fprofile-arcs -ftest-coverage)
-  target_link_options(${CMAKE_PROJECT_NAME} PUBLIC -fprofile-arcs -ftest-coverage)
-  verbose_message("Code coverage is enabled and provided with GCC.")
-endif()
-
 foreach(file ${test_sources})
   string(REGEX REPLACE "(.*/)([a-zA-Z0-9_ ]+)(\.cpp)" "\\2" test_name ${file})
 
@@ -44,13 +38,24 @@ if(1)
 
   set(${CMAKE_PROJECT_NAME}_TEST_LIB ${LIB_NAME})
 
-  target_link_libraries(
-          all_Tests
-          PRIVATE
-          Catch2::Catch2WithMain
-          Eigen3::Eigen
-          ${${CMAKE_PROJECT_NAME}_TEST_LIB}
-  )
+  if(${PROJECT_NAME_UPPERCASE}_ENABLE_CODE_COVERAGE)
+    target_link_libraries(
+            all_Tests
+            PRIVATE
+            Catch2::Catch2WithMain --coverage
+            Eigen3::Eigen
+            ${${CMAKE_PROJECT_NAME}_TEST_LIB}
+    )
+    target_compile_options(all_Tests PRIVATE --coverage)
+  else ()
+    target_link_libraries(
+            all_Tests
+            PRIVATE
+            Catch2::Catch2WithMain
+            Eigen3::Eigen
+            ${${CMAKE_PROJECT_NAME}_TEST_LIB}
+    )
+  endif ()
 
   catch_discover_tests(all_Tests)
   endif ()

@@ -21,7 +21,7 @@ option(${PROJECT_NAME_UPPERCASE}_ENABLE_CPPCHECK "Enable static analysis with Cp
 # Code coverage
 #
 
-option(${PROJECT_NAME_UPPERCASE}_ENABLE_CODE_COVERAGE "Enable code coverage through GCC." ON)
+option(${PROJECT_NAME_UPPERCASE}_ENABLE_CODE_COVERAGE "Enable code coverage through GCC." OFF)
 
 #
 # Miscelanious options
@@ -30,7 +30,7 @@ option(${PROJECT_NAME_UPPERCASE}_ENABLE_CODE_COVERAGE "Enable code coverage thro
 # Generate compile_commands.json for clang based tools
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-option(${PROJECT_NAME_UPPERCASE}_VERBOSE_OUTPUT "Enable verbose output, allowing for a better understanding of each step taken." ON)
+option(${PROJECT_NAME_UPPERCASE}_VERBOSE_OUTPUT "Enable verbose output, allowing for a better understanding of each step taken." OFF)
 
 option(${PROJECT_NAME_UPPERCASE}_ENABLE_CCACHE "Enable the usage of Ccache, in order to speed up rebuild times." ON)
 find_program(CCACHE_FOUND ccache)
