@@ -65,7 +65,7 @@ namespace jpathgen{
       for (int i =0; i<N; i++){
         total+= eval_single_bivar_gaussian(i, x, y);
       }
-      return total;
+      return total/N;
     }
 
     int MultiModalBivariateGaussian::length()

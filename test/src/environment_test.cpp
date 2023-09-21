@@ -85,9 +85,9 @@ SCENARIO("MVBivarGaussians can be instatiated", "[MVBG]"){
     }
 
     WHEN("MVBG is evaluated at (0,0)"){
-      double const exp = 4/(2*M_PI);
+      double const exp = 1/(2*M_PI);
 
-      THEN("The value is 4/ ( 2 PI )"){
+      THEN("The value is 1 / ( 2 PI )"){
         double act = mmbg(0,0);
 
         REQUIRE_THAT(act, WithinRel(exp));
