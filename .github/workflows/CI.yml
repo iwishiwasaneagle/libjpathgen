@@ -47,16 +47,16 @@ jobs:
           cmake -B build \
             -DJPATHGEN_ENABLE_UNIT_TESTING=ON \
             -DJPATHGEN_ENABLE_CODE_COVERAGE=ON
-          cmake --build build -j $(nproc)
+          cmake --build build -j $(nproc) --config Release
 
       - name: Run tests
         run: |
-          ctest --output-on-failure --test-dir build
+          ctest --output-on-failure --test-dir build -C Release
 
       - name: Prepare files for codecov
         run: |
           lcov --capture --directory build --output-file coverage.info
-          lcov --remove coverage.info --output-file coverage.info '/usr/*' '*/tests/*' '*/extern/*'
+          lcov --remove coverage.info --output-file coverage.info '/usr/*' '*/test/*' '*/extern/*'
 
       - name: Upload code test coverage report
         uses: codecov/codecov-action@v3.1.1
