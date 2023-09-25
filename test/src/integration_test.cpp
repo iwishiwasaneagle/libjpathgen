@@ -49,7 +49,7 @@ SCENARIO("The integration function is called with the various allowed types", "[
       fn = fn1;
       break;
     case CALLABLE::MMBG:
-      fn = std::bind(generate_mmbg(n_modes), std::placeholders::_1, std::placeholders::_2);
+      fn = generate_mmbg(n_modes);
       break;
   }
 
