@@ -9,7 +9,7 @@ using namespace jpathgen::geometry;
 using namespace jpathgen::environment;
 using namespace jpathgen::integration;
 
-bool run(STLMUS mus, STLCOVS covs,STLCoords coords, float buffer_width){
+float run(STLMUS mus, STLCOVS covs,STLCoords coords, float buffer_width){
   MultiModalBivariateGaussian gmm(mus, covs);
   float result = integrate_over_buffered_line(gmm, coords, buffer_width);
   return result;
