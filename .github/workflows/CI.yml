@@ -47,7 +47,7 @@ jobs:
           cmake -B build \
             -DJPATHGEN_ENABLE_UNIT_TESTING=ON \
             -DJPATHGEN_ENABLE_CODE_COVERAGE=ON \
-            -DJPATHGEN_ENABLE_VECTORIZATION=ON \
+            -DJPATHGEN_ENABLE_VECTORIZATION=OFF \
             -DCMAKE_BUILD_TYPE=Release
           cmake --build build -j $(nproc) --config Release
 
