@@ -14,34 +14,41 @@ namespace jpathgen
 
     typedef Eigen::Matrix<double, 1, 2, Eigen::RowMajor> MU;
     typedef Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor> MUS;
-    typedef Eigen::Matrix<double, 2,2, Eigen::RowMajor> COV;
-    typedef Eigen::Matrix<double, Eigen::Dynamic, 2 ,Eigen::RowMajor> COVS;
+    typedef Eigen::Matrix<double, 2, 2, Eigen::RowMajor> COV;
+    typedef Eigen::Matrix<double, Eigen::Dynamic, 2, Eigen::RowMajor> COVS;
 
-    typedef std::pair<double,double> STLMU;
+    typedef std::pair<double, double> STLMU;
+    typedef std::pair<STLMU, STLMU> STLCOV;
     typedef std::vector<STLMU> STLMUS;
     typedef std::vector<STLMU> STLCOVS;
+
+    class BivariateGaussian
+    {
+     private:
+      const double mu_x, mu_y, sigma_x, sigma_y, rho;
+      double a, b, c;
+
+     public:
+      double operator()(double x, double y);
+      BivariateGaussian(MU mu, COV cov);
+    };
 
     class MultiModalBivariateGaussian
     {
      private:
       int N;
+      std::vector<BivariateGaussian> _bgs;
       MUS _mus;
+      COVS _covs;
+
+      void init();
 
      public:
       const MUS& getMus() const;
       const COVS& getCovs() const;
 
-     private:
-      COVS _covs;
-
-     protected:
-      double eval_single_bivar_gaussian(int gauss_ind, double x, double y);
-
-
-
-     public:
       double operator()(double x, double y);
-      int length();
+      int length() const;
 
       MultiModalBivariateGaussian(Eigen::Ref<MUS> mus, Eigen::Ref<COVS> covs);
       MultiModalBivariateGaussian(STLMUS mus, STLCOVS covs);

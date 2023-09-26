@@ -53,6 +53,15 @@ if(1)
             GEOS::geos
             cubpackpp::cubpackpp
     )
+    if (${PROJECT_NAME_UPPERCASE}_ENABLE_VECTORIZATION)
+        message(WARNING "Vectorization is in experimental mode and may cause unknown issues")
+        include(cmake/EigenVectorization.cmake)
+        target_compile_options(
+                ${LIB_NAME}
+            PRIVATE
+                ${_CXX_VECTORIZATION_FLAGS}
+        )
+    endif ()
 
     install(
             TARGETS

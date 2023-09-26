@@ -1,0 +1,12 @@
+*
+!src/*
+!cmake/*
+!extern/*
+!include/*
+!test/*
+!CMakeLists.txt
+!MANIFEST.in
+!pyproject.toml
+!setup.cfg
+!setup.py
+!.git/*
