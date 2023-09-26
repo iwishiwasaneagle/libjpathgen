@@ -15,4 +15,4 @@ RUN git clone --depth 1 --branch v3.4.0 https://github.com/catchorg/Catch2.git \
 
 WORKDIR /src
 COPY . .
-RUN pip install .[test]
+RUN pip install .[test] --break-system-package
