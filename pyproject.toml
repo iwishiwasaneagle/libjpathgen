@@ -11,6 +11,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools_scm]
 
+[tool.scikit-buiod]
+build_type = "Release"
+
 [tool.cibuildwheel]
 skip = ["pp*"]  #  no pypy
 archs = ["auto64"] # only 64bit
