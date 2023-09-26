@@ -7,68 +7,72 @@
 
 #include "jpathgen/error.h"
 
-namespace jpathgen{
+namespace jpathgen
+{
   namespace environment
   {
-    MultiModalBivariateGaussian::MultiModalBivariateGaussian(Eigen::Ref<MUS> mus, Eigen::Ref<COVS> covs):
-    _mus(mus), _covs(covs)
+    BivariateGaussian::BivariateGaussian(MU mu, COV cov)
+        : mu_x(mu(0)),
+          mu_y(mu(1)),
+          sigma_x(sqrt(cov(0, 0))),
+          sigma_y(sqrt(cov(1, 1))),
+          rho(cov(0, 1) / (sigma_x * sigma_y))
+
     {
-      N = _mus.rows();
-      Error(2*N!=_covs.rows(), "mus and covs must be the same length");
+      a = (1 - (rho * rho));
+      b = (1 / (2 * M_PI * sigma_x * sigma_y * sqrt(a)));
+      c = (1 / (-2 * a));
+    }
+    double BivariateGaussian::operator()(double x, double y)
+    {
+      double d, e, f;
+
+      d = (x - mu_x) / sigma_x;
+      e = (y - mu_y) / sigma_y;
+      f = (d * d) - 2 * rho * d * e + (e * e);
+
+      return b * exp(c * f);
+    }
+
+    MultiModalBivariateGaussian::MultiModalBivariateGaussian(Eigen::Ref<MUS> mus, Eigen::Ref<COVS> covs)
+        : _mus(mus),
+          _covs(covs)
+    {
+      init();
     }
 
     MultiModalBivariateGaussian::MultiModalBivariateGaussian(STLMUS mus, STLCOVS covs)
     {
-
-      _mus = Eigen::Map<MUS>(&(mus[0].first), mus.size(), 2).cast<double>();
-      _covs = Eigen::Map<COVS>(&(covs[0].first), covs.size(), 2).cast<double>();
-      N = _mus.rows();
-      Error(2*N!=_covs.rows(), "mus and covs must be the same length");
+      _mus = Eigen::Map<MUS>(&(mus[0].first), static_cast<long>(mus.size()), 2).cast<double>();
+      _covs = Eigen::Map<COVS>(&(covs[0].first), static_cast<long>(covs.size()), 2).cast<double>();
+      init();
     }
 
-
-    inline double _single_bivar_gaussian(MU mu, COV cov, double x, double y){
-      const double sigma_x = sqrt(cov(0,0));
-      const double sigma_y = sqrt(cov(1,1));
-      const double rho = cov(0,1)/(sigma_x*sigma_y);
-      const double mu_x = mu(0);
-      const double mu_y = mu(1);
-
-      double a;
-      double b;
-      double c;
-      double d;
-      double e;
-      double f;
-
-       a = 1-(rho*rho);
-       b = 1/(2*M_PI*sigma_x*sigma_y*sqrt(a));
-       c = 1/(-2*a);
-       d = (x-mu_x)/sigma_x;
-       e = (y-mu_y)/sigma_y;
-      f = (d*d)-2*rho*d*e+(e*e);
-
-      return b* exp(c*f);
-    }
-
-    double MultiModalBivariateGaussian::eval_single_bivar_gaussian(int gauss_ind, double x, double y)
+    void MultiModalBivariateGaussian::init()
     {
-      MU mu = _mus.row(gauss_ind);
-      COV cov = _covs.block<2,2>(2*gauss_ind, 0);
-
-      return _single_bivar_gaussian(mu, cov, x, y);
+      N = _mus.rows();
+      Error(2 * _mus.rows() != _covs.rows(), "mus and covs must be the same length");
+      MU _mu;
+      COV _cov;
+      for (int i = 0; i < N; i++)
+      {
+        _mu = _mus.row(i);
+        _cov = _covs.block<2, 2>(2 * i, 0);
+        _bgs.emplace_back(_mu, _cov);
+      }
     }
 
     double MultiModalBivariateGaussian::operator()(double x, double y)
     {
       double total = 0;
-      for (int i =0; i<N; i++){
-        total+= eval_single_bivar_gaussian(i, x, y);
+      for (BivariateGaussian _bg : _bgs)
+      {
+        total += _bg(x, y);
       }
-      return total/N;
+      return total / N;
     }
 
-    int MultiModalBivariateGaussian::length()
+    int MultiModalBivariateGaussian::length() const
     {
       return N;
     }
@@ -80,5 +84,5 @@ namespace jpathgen{
     {
       return _covs;
     }
-  }
-}
+  }  // namespace environment
+}  // namespace jpathgen
