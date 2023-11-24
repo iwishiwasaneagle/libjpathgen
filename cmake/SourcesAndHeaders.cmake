@@ -20,6 +20,8 @@ set(headers
         include/jpathgen/environment.h
         include/jpathgen/function.h
         include/jpathgen/error.h
+
+        include/jpathgen/geos_compat.h
         )
 
 set(test_sources

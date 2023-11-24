@@ -5,7 +5,9 @@
 #define JDRONES_INTEGRATION_H
 
 #include <cubpackpp/cubpackpp.h>
-#include <geos/geom/CoordinateArraySequence.h>
+
+#include "jpathgen/geos_compat.h"
+
 
 #include <Eigen/Core>
 #include <memory>
@@ -30,7 +32,7 @@ namespace jpathgen
 
     template<typename T>
     double
-    _integration_over_buffered_line(T g, std::unique_ptr<geos::geom::CoordinateArraySequence> cs, double d);
+    _integration_over_buffered_line(T g, std::unique_ptr<geos::geom::CoordinateSequenceCompat> cs, double d);
 
     double integrate_over_buffered_line(function::Function f, geometry::EigenCoords coords, double d = DEFAULT_D);
     double integrate_over_buffered_line(function::Function f, geometry::STLCoords coords, double d = DEFAULT_D);
