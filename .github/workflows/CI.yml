@@ -9,17 +9,29 @@ on:
 jobs:
   run-tests:
     name: Run tests
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: "ubuntu-22.04"
+            python: "3.12"
+            libgeos: "3.11.1"
+          - os: "ubuntu-22.04"
+            python: "3.11"
+            libgeos: "3.11.1"
+          - os: "ubuntu-22.04"
+            python: "3.10"
+            libgeos: "3.11.1"
     steps:
 
       - uses: actions/checkout@v4
         with:
           submodules: recursive
 
-      - name: Set up Python 3.10
+      - name: "Set up Python ${{ matrix.python }}"
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "${{ matrix.python }}"
 
       - name: Install dependencies
         run: |
@@ -32,8 +44,8 @@ jobs:
         run: |
           sudo apt-get install -y software-properties-common
           sudo apt-add-repository -y ppa:ubuntugis/ubuntugis-unstable
-          sudo apt-get update
-          sudo apt-get install -y libgeos++-dev libgeos-dev libgeos3.11.1
+          sudo apt-get update      
+          sudo apt-get install -y libgeos++-dev libgeos-dev ${{ matrix.libgeos }}
 
       - name: Install Catch2
         run: |
