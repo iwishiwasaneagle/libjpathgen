@@ -5,7 +5,8 @@
 
 #include <cubpackpp/cubpackpp.h>
 #include <geos/geom/Coordinate.h>
-#include <geos/geom/CoordinateArraySequence.h>
+
+#include "jpathgen/geos_compat.h"
 
 #include <cmath>
 #include <functional>
@@ -40,7 +41,7 @@ namespace jpathgen
 
     template<typename Callable>
     double
-    _integration_over_buffered_line(Callable g, std::unique_ptr<CoordinateArraySequence> cs, double d)
+    _integration_over_buffered_line(Callable g, std::unique_ptr<CoordinateSequenceCompat> cs, double d)
     {
       auto ls = geometry::create_linestring(std::move(cs));
       auto buffered = geometry::buffer_linestring(std::move(ls), d);

@@ -18,6 +18,39 @@ sudo apt-get install \
 pip install git+https://github.com/iwishiwasaneagle/libjpathgen.git
 ```
 
+### Requirements
+
+For general use the below is sufficient.
+
+```bash
+sudo apt-get install \
+  libeigen3-dev \
+  libgeos++-dev \
+  libgeos-dev \
+  libgeos3.11.1 \ # libgeos3.12.0 for ubuntu:23.10
+  pybind11-dev
+```
+
+For testing, `Catch2>=v3.4.0` is required (see [CI.yml](.github/workflows/CI.yml))
+
+#### libgeos
+
+The minimum supported version of libgeos is `3.11.1`. This means that it must be built from source in `ubuntu 20.4` as
+even `ppa:ubuntugis/ubuntugis-unstable` cannot help here (`3.10.2` is the maximum installable via `apt`).
+
+#### pybind
+
+The minimum version of pybind11 depends on the version of python. It is advised to either install from source or
+using pip (`pip install "pybind11[global]>=2.11.0"`).
+
+**WARNING**: `Ubuntu 22.04` only ships with `pybind11@v2.9.1`.
+
+| Python | [`pybind11-dev`](https://pybind11.readthedocs.io/en/stable/changelog.html) |
+|--------|----------------------------------------------------------------------------|
+| 3.10   | 2.9.0                                                                      |
+| 3.11   | 2.10.0                                                                     |
+| 3.12   | 2.11.0                                                                     |
+
 ## Run tests
 
 ```bash

@@ -5,7 +5,11 @@
 #define JDRONES_GEOMETRY_H
 
 #include <cubpackpp/cubpackpp.h>
-#include <geos/geom/CoordinateArraySequence.h>
+
+#include "jpathgen/geos_compat.h"
+
+
+
 #include <geos/geom/Geometry.h>
 #include <geos/geom/GeometryFactory.h>
 #include <geos/geom/LineString.h>
@@ -19,7 +23,7 @@ namespace jpathgen
 {
   namespace geometry
   {
-    using CAS = geos::geom::CoordinateArraySequence;
+    using CAS = geos::geom::CoordinateSequenceCompat;
 
     typedef Eigen::Matrix<double, Eigen::Dynamic, 2> EigenCoords;
     typedef std::vector<std::pair<double,double>> STLCoords;
