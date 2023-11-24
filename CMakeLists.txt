@@ -41,7 +41,7 @@ endif ()
 add_subdirectory(extern/cubpackpp)
 
 # Find all headers and implementation files
-if(1)
+if (1)
     include(cmake/SourcesAndHeaders.cmake)
     add_library(${LIB_NAME} STATIC SHARED ${sources} ${headers} ${templates})
     target_include_directories(
@@ -64,7 +64,7 @@ if(1)
         include(cmake/EigenVectorization.cmake)
         target_compile_options(
                 ${LIB_NAME}
-            PRIVATE
+                PRIVATE
                 ${_CXX_VECTORIZATION_FLAGS}
         )
     endif ()
@@ -101,12 +101,12 @@ if(1)
             include/${LIB_NAME}
             DESTINATION
             include
-)
-endif()
+    )
+endif ()
 
 set(${LIB_NAME}_CMAKE_PACKAGE_INSTALL_SUBDIR "share/${LIB_NAME}/cmake")
 
-if(1)
+if (1)
     include(CMakePackageConfigHelpers)
     write_basic_package_version_file(
             ${LIB_NAME}ConfigVersion.cmake
@@ -128,7 +128,7 @@ if(1)
             DESTINATION
             ${CMAKE_INSTALL_LIBDIR}/cmake/${LIB_NAME}
     )
-endif()
+endif ()
 
 if (${${PROJECT_NAME_UPPERCASE}_BUILD_EXECUTABLE})
     add_executable(${EXE_NAME} ${exe_sources})
@@ -159,7 +159,6 @@ endif ()
 #
 
 
-
 # We are using the SKBUILD variable, which is defined when scikit-build is
 # running the CMake build, to control building the Python wrapper. This allows
 # the C++ project to be installed, standalone, when using the standard CMake
@@ -169,6 +168,19 @@ if (DEFINED SKBUILD OR DEFINED DEV)
     set(ignoreMe "${SKBUILD}")
     set(PYBIND11_FINDPYTHON ON)
     find_package(pybind11 CONFIG REQUIRED)
+
+    # pybind11.readthedocs.io/en/stable/changelog.html
+    if ((Python_VERSION GREATER_EQUAL "3.11") AND (pybind11_VERSION LESS 2.10.1))
+        message(FATAL_ERROR "pybind11 version ($pybind11_VERSION) does not support
+                             this version of python ($Python_VERSION)"
+        )
+    endif ()
+    if ((Python_VERSION GREATER_EQUAL "3.12") AND (pybind11_VERSION LESS 2.11.0))
+        message(FATAL_ERROR "pybind11 version ($pybind11_VERSION) does not support
+                             this version of python ($Python_VERSION)"
+        )
+    endif ()
+
     pybind11_add_module(${PY_NAME} ${python_sources})
 
     target_include_directories(
@@ -206,7 +218,6 @@ if (DEFINED SKBUILD OR DEFINED DEV)
 endif ()
 
 
-
 if (${PROJECT_NAME_UPPERCASE}_ENABLE_UNIT_TESTING)
     enable_testing()
     message(STATUS "Build unit tests for the project. Tests should always be found in the test folder\n")
@@ -214,7 +225,7 @@ if (${PROJECT_NAME_UPPERCASE}_ENABLE_UNIT_TESTING)
 endif ()
 
 
-if(${PROJECT_NAME_UPPERCASE}_ENABLE_FUZZING)
+if (${PROJECT_NAME_UPPERCASE}_ENABLE_FUZZING)
     message(STATUS "Build fuzzing tests for the project. Fuzzing tests should always be found in the test/fuzzing folder\n")
     add_subdirectory(test/fuzzing)
 endif ()
