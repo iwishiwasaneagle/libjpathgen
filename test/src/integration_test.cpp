@@ -7,8 +7,11 @@
 #include <Eigen/Core>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
+#include <catch2/generators/catch_generators_range.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
-#include <map>
+
+#include <functional>
+using namespace std::placeholders;  // for _1, _2, _3...
 
 using namespace jpathgen::integration;
 using namespace jpathgen::function;
@@ -31,6 +34,13 @@ MultiModalBivariateGaussian generate_mmbg(int n_modes=1){
   }
   MultiModalBivariateGaussian mmbg(mus, covs);
   return mmbg;
+}
+
+double fn_step(double a, double b, double width = 1){
+  if (a>=-width/2 && a<=width/2 && b>=-width/2 && b<= width/2){
+    return 1;
+  }
+  return 0;
 }
 
 SCENARIO("The integration function is called with the various allowed types", "[integration]"){
@@ -79,4 +89,20 @@ SCENARIO("The integration function is called with the various allowed types", "[
     }
   }
 }
+
+SCENARIO("A step function with increasingly small plateau is evaluated", "[integration]")
+{
+  WHEN("A width is set to something small")
+  {
+    auto width = GENERATE(range(0.1, 1.0, 0.1));
+    THEN("Then the double integral function adapts")
+    {
+      const double act = integrate_over_rect([width](double a, double b) { return fn_step(a, b, width); }, -1, 1, -1, 1);
+      const double exp = width * width;
+      double rel_error = abs((act - exp) / exp);
+      REQUIRE(rel_error < 0.005);  // Within 0.5%
+    }
+  }
+}
+
 
