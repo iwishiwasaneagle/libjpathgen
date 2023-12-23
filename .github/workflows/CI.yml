@@ -81,8 +81,3 @@ jobs:
           files: ./coverage.xml,./coverage.info
           fail_ci_if_error: true
 
-      - name: Install as python package
-        run: pip install .[test]
-
-      - name: Run pytest
-        run: pytest test/python
