@@ -35,8 +35,11 @@ namespace jpathgen
     std::unique_ptr<CAS> coord_sequence_from_array(EigenCoords coords);
     std::unique_ptr<CAS> coord_sequence_from_array(GeosCoords coords);
     std::unique_ptr<geos::geom::LineString> create_linestring(std::unique_ptr<CAS> cl);
-    std::unique_ptr<geos::geom::Geometry> buffer_linestring(std::unique_ptr<geos::geom::LineString> ls, double d = 2.5);
-    std::unique_ptr<geos::geom::Geometry> triangulate_polygon(std::unique_ptr<Geometry> poly);
+
+    std::unique_ptr<Geometry> buffer_linestring(std::unique_ptr<geos::geom::LineString> ls, double d = 2.5);
+
+    template<typename GEOM>
+    std::unique_ptr<geos::geom::Geometry> triangulate_polygon(std::unique_ptr<GEOM> poly);
 
     void geos_to_cubpack(std::unique_ptr<geos::geom::Geometry> geoms, cubpackpp::REGION_COLLECTION& out_region);
   }  // namespace geometry

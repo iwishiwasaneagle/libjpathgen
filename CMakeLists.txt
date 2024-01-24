@@ -229,3 +229,5 @@ if (${PROJECT_NAME_UPPERCASE}_ENABLE_FUZZING)
     message(STATUS "Build fuzzing tests for the project. Fuzzing tests should always be found in the test/fuzzing folder\n")
     add_subdirectory(test/fuzzing)
 endif ()
+
+include(cmake/Doxygen.cmake)

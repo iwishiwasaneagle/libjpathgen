@@ -8,7 +8,6 @@
 
 #include "jpathgen/error.h"
 
-
 namespace jpathgen
 {
   namespace geometry
@@ -17,8 +16,8 @@ namespace jpathgen
     using geos::geom::LineString;
     using geos::triangulate::polygon::ConstrainedDelaunayTriangulator;
     using Pt = cubpackpp::Point;
-    using cubpackpp::TRIANGLE;
     using cubpackpp::REGION_COLLECTION;
+    using cubpackpp::TRIANGLE;
 
     GeometryFactory* _global_factory;
 
@@ -75,10 +74,15 @@ namespace jpathgen
     {
       return ls->buffer(d);
     }
-    std::unique_ptr<Geometry> triangulate_polygon(std::unique_ptr<Geometry> poly)
+
+    template<typename GEOM>
+    std::unique_ptr<Geometry> triangulate_polygon(std::unique_ptr<GEOM> poly)
     {
       return ConstrainedDelaunayTriangulator::triangulate(poly.get());
     }
+    template std::unique_ptr<Geometry> triangulate_polygon(std::unique_ptr<Geometry>);
+    template std::unique_ptr<Geometry> triangulate_polygon(std::unique_ptr<Polygon>);
+    template std::unique_ptr<Geometry> triangulate_polygon(std::unique_ptr<geos::geom::MultiPolygon>);
 
     void geos_to_cubpack(std::unique_ptr<Geometry> geoms, REGION_COLLECTION& out_region)
     {
