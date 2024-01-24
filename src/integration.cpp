@@ -17,18 +17,13 @@
 
 using namespace geos::geom;
 using namespace geos::triangulate::tri;
-using cubpackpp::real;
-using cubpackpp::REGION_COLLECTION;
-using cubpackpp::TRIANGLE;
-using cubpackpp::RECTANGLE;
-using Pt = cubpackpp::Point;
 
 namespace jpathgen
 {
   namespace integration
   {
-    template<typename Callable>
-    double _conversion(Callable f, const cubpackpp::Point& pt)
+    template<typename FUNC>
+    double _conversion(FUNC f, const cubpackpp::Point& pt)
     {
       double x = pt.X(), y = pt.Y();
       return f(x, y);
@@ -39,63 +34,39 @@ namespace jpathgen
       return cubpackpp::Integrate(fn, rc, 0, 0.05);
     }
 
-    template<typename Callable>
-    double
-    _integration_over_buffered_line(Callable g, std::unique_ptr<CoordinateSequenceCompat> cs, double d)
+    template<typename FUNC, typename COORDS>
+    double integrate_over_buffered_line(FUNC f, COORDS coords, double d)
     {
+      std::unique_ptr<CoordinateSequenceCompat> cs = geometry::coord_sequence_from_array(coords);
       auto ls = geometry::create_linestring(std::move(cs));
       auto buffered = geometry::buffer_linestring(std::move(ls), d);
       auto triangulated = geometry::triangulate_polygon(std::move(buffered));
-      REGION_COLLECTION rg;
+      cubpackpp::REGION_COLLECTION rg;
       geometry::geos_to_cubpack(std::move(triangulated), rg);
-      cubpackpp::Function fn_bound = std::bind(&_conversion<Callable>, g, std::placeholders::_1);
-
+      cubpackpp::Function fn_bound = std::bind(&_conversion<FUNC>, f, std::placeholders::_1);
       return _integration_over_region_collections(fn_bound, rg);
     }
+    template double integrate_over_buffered_line(function::Function, geometry::EigenCoords, double);
+    template double integrate_over_buffered_line(function::Function, geometry::STLCoords, double);
+    template double integrate_over_buffered_line(environment::MultiModalBivariateGaussian, geometry::EigenCoords, double);
+    template double integrate_over_buffered_line(environment::MultiModalBivariateGaussian, geometry::STLCoords, double);
+    template double integrate_over_buffered_line(double (*)(double, double), geometry::EigenCoords, double);
+    template double integrate_over_buffered_line(double (*)(double, double), geometry::STLCoords, double);
 
-    double integrate_over_buffered_line(function::Function f, geometry::EigenCoords coords, double d)
-
-      {
-        auto cs = geometry::coord_sequence_from_array(coords);
-        return _integration_over_buffered_line(f, std::move(cs), d);
-      }
-
-    double integrate_over_buffered_line(function::Function f, geometry::STLCoords coords, double d)
+    template<typename FUNC>
+    double integrate_over_rect(FUNC f, double left, double right, double bottom, double top)
     {
-      auto cs = geometry::coord_sequence_from_array(coords);
-      return _integration_over_buffered_line(f, std::move(cs), d);
-    }
-
-    double integrate_over_buffered_line(environment::MultiModalBivariateGaussian g, geometry::EigenCoords coords, double d)
-    {
-      auto cs = geometry::coord_sequence_from_array(coords);
-      return _integration_over_buffered_line(g, std::move(cs), d);
-    }
-
-    double integrate_over_buffered_line(environment::MultiModalBivariateGaussian g, geometry::STLCoords coords, double d)
-    {
-      auto cs = geometry::coord_sequence_from_array(coords);
-      return _integration_over_buffered_line(g, std::move(cs), d);
-    }
-
-    template<typename T>
-    double
-    _integrate_over_rect(T t, double left, double right, double bottom, double top){
-      REGION_COLLECTION rc;
-      Pt A(left,bottom), B(left, top), C(right, bottom);
-      RECTANGLE rect(A, B, C);
+      cubpackpp::REGION_COLLECTION rc;
+      cubpackpp::Point A(left, bottom), B(left, top), C(right, bottom);
+      cubpackpp::RECTANGLE rect(A, B, C);
       rc += rect;
 
-      cubpackpp::Function fn_bound = std::bind(&_conversion<T>, t, std::placeholders::_1);
+      cubpackpp::Function fn_bound = std::bind(&_conversion<FUNC>, f, std::placeholders::_1);
 
       return _integration_over_region_collections(fn_bound, rc);
     }
-    double integrate_over_rect(environment::MultiModalBivariateGaussian g, double left, double right, double bottom, double top){
-      return _integrate_over_rect(g, left, right, bottom, top);
-    }
-    double integrate_over_rect(function::Function f, double left, double right, double bottom, double top){
-      return _integrate_over_rect(f, left, right, bottom, top);
-    }
+    template double integrate_over_rect(environment::MultiModalBivariateGaussian, double, double, double, double);
+    template double integrate_over_rect(function::Function, double, double, double, double);
 
   }  // namespace integration
 }  // namespace jpathgen
