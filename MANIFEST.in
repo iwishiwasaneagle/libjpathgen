@@ -4,6 +4,6 @@ recursive-include include/jpathgen *.h
 
 exclude MANIFEST.in
 
-recursive-include lib/ *.cpp *.h *.tpp
-include lib/cubpackpp/cmake/*
-include lib/cubpackpp/CMakeLists.txt
+recursive-include extern/ *.cpp *.h *.tpp
+include extern/cubpackpp/cmake/*
+include extern/cubpackpp/CMakeLists.txt
