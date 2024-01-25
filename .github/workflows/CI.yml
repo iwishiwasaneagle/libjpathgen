@@ -39,7 +39,6 @@ jobs:
           sudo apt-get install -y \
             git build-essential cmake lcov \
             libeigen3-dev pybind11-dev
-          pip install "pybind11[global]>=2.11.0"
 
       - name: Install libgeos
         run: |
@@ -55,6 +54,10 @@ jobs:
           cmake -Bbuild -H. -DBUILD_TESTING=OFF 
           sudo cmake --build build/ --target install -j $(nproc)
 
+      - name: Install python deps
+        run: |
+          pip install "pybind11[global]>=2.11.0" -e .[test]
+
       - name: Build C++
         run: |
           cmake -B build \
@@ -67,6 +70,7 @@ jobs:
       - name: Run tests
         run: |
           ctest --output-on-failure --test-dir build -C Release
+          python -m pytest test/python
 
       - name: Prepare files for codecov
         run: |
