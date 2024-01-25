@@ -31,9 +31,9 @@ namespace jpathgen
 
     extern geos::geom::GeometryFactory* _global_factory;
 
-    std::unique_ptr<CAS> coord_sequence_from_array(STLCoords coords);
-    std::unique_ptr<CAS> coord_sequence_from_array(EigenCoords coords);
-    std::unique_ptr<CAS> coord_sequence_from_array(GeosCoords coords);
+    template<typename COORDS>
+    std::unique_ptr<CAS> coord_sequence_from_array(COORDS coords);
+
     std::unique_ptr<geos::geom::LineString> create_linestring(std::unique_ptr<CAS> cl);
 
     std::unique_ptr<Geometry> buffer_linestring(std::unique_ptr<geos::geom::LineString> ls, double d = 2.5);

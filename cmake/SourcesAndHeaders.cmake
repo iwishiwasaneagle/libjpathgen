@@ -2,6 +2,8 @@ set(sources
         src/geometry.cpp
         src/integration.cpp
         src/environment.cpp
+
+        src/geometry/coord_sequence_from_array.cpp
         )
 
 set(exe_sources
