@@ -38,12 +38,21 @@ if (GEOS_VERSION LESS "3.12.0")
     add_compile_definitions(GEOS_COMPATIBILITY_REQUIRED)
 endif ()
 
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+# when building, don't use the install RPATH already
+# (but later on when installing)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
+set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+# add the automatically determined parts of the RPATH
+# which point to directories outside the build tree to the install RPATH
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
 add_subdirectory(extern/cubpackpp)
 
 # Find all headers and implementation files
 if (1)
     include(cmake/SourcesAndHeaders.cmake)
-    add_library(${LIB_NAME} STATIC SHARED ${sources} ${headers} ${templates})
+    add_library(${LIB_NAME} SHARED ${sources} ${headers} ${templates})
     target_include_directories(
             ${LIB_NAME}
             PUBLIC
@@ -136,9 +145,6 @@ if (${${PROJECT_NAME_UPPERCASE}_BUILD_EXECUTABLE})
     target_link_libraries(
             ${EXE_NAME}
             PRIVATE
-            Eigen3::Eigen
-            GEOS::geos
-            cubpackpp::cubpackpp
             CLI11::CLI11
             ${LIB_NAME}
     )
@@ -183,20 +189,10 @@ if (DEFINED SKBUILD OR DEFINED DEV)
 
     pybind11_add_module(${PY_NAME} ${python_sources})
 
-    target_include_directories(
-            ${PY_NAME}
-            PUBLIC
-            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-            PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/src
-    )
     target_link_libraries(
             ${PY_NAME}
             PRIVATE
-            Eigen3::Eigen
-            GEOS::geos
-            cubpackpp::cubpackpp
+            ${LIB_NAME}
     )
 
     # Installing the extension module to the root of the package

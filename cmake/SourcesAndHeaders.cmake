@@ -11,7 +11,6 @@ set(exe_sources
 
 set(python_sources
         src/python.cpp
-        ${sources}
         )
 
 set(headers
