@@ -45,9 +45,7 @@ namespace jpathgen
     template double integration_over_region_collections(
         environment::MultiModalBivariateGaussian,
         cubpackpp::REGION_COLLECTION);
-    template double integration_over_region_collections(
-        double(*)(double,double),
-        cubpackpp::REGION_COLLECTION);
+    template double integration_over_region_collections(double (*)(double, double), cubpackpp::REGION_COLLECTION);
 
     template<typename FUNC, typename COORDS>
     double integrate_over_buffered_line(FUNC f, COORDS coords, double d)
@@ -93,6 +91,7 @@ namespace jpathgen
       return integration_over_region_collections(f, rg);
     }
 
+    template double integrate_over_buffered_lines(function::Function, std::vector<geometry::EigenCoords>, double);
     template double integrate_over_buffered_lines(function::Function, std::vector<geometry::STLCoords>, double);
     template double
     integrate_over_buffered_lines(environment::MultiModalBivariateGaussian, std::vector<geometry::EigenCoords>, double);
