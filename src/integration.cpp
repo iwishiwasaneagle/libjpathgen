@@ -1,13 +1,13 @@
-// #  Copyright 2023 Jan-Hendrik Ewers
-// #  SPDX-License-Identifier: GPL-3.0-only
-
+/*
+ * Copyright (c) 2024.  Jan-Hendrik Ewers
+ * SPDX-License-Identifier: GPL-3.0-only
+ */
 #include "jpathgen/integration.h"
 
 #include <cubpackpp/cubpackpp.h>
 #include <geos/geom/Coordinate.h>
 #include <geos/operation/union/UnaryUnionOp.h>
 
-#include <cmath>
 #include <functional>
 #include <utility>
 
@@ -23,58 +23,109 @@ namespace jpathgen
 {
   namespace integration
   {
+    /*************************************************
+     * CONTINUOUS INTEGRATION OVER REGION COLLECTION *
+     *************************************************/
     template<typename FUNC>
-    double _conversion(FUNC f, const cubpackpp::Point& pt)
+    double continuous_integration_over_region_collections(FUNC f, cubpackpp::REGION_COLLECTION rc, ContinuousArgs* args)
     {
-      double x = pt.X(), y = pt.Y();
-      return f(x, y);
-    }
-
-    template<typename FUNC>
-    double integration_over_region_collections(FUNC f, cubpackpp::REGION_COLLECTION rc)
-    {
-      cubpackpp::Function fn_bound = std::bind(&_conversion<FUNC>, f, std::placeholders::_1);
-      return integration_over_region_collections(fn_bound, rc);
+      cubpackpp::Function fn_bound = [&f](const cubpackpp::Point& pt)
+      {
+        double x = pt.X(), y = pt.Y();
+        return f(x, y);
+      };
+      return continuous_integration_over_region_collections(fn_bound, rc, args);
     }
     template<>
-    double integration_over_region_collections(cubpackpp::Function fn, cubpackpp::REGION_COLLECTION rc)
+    double continuous_integration_over_region_collections(
+        cubpackpp::Function fn,
+        cubpackpp::REGION_COLLECTION rc,
+        ContinuousArgs* args)
     {
-      return cubpackpp::Integrate(fn, rc, 0, 0.05);
+      return cubpackpp::Integrate(fn, rc, args->_abs_err_req, args->_rel_err_req);
     }
-    template double integration_over_region_collections(function::Function, cubpackpp::REGION_COLLECTION);
-    template double integration_over_region_collections(
+    template double
+    continuous_integration_over_region_collections(function::Function, cubpackpp::REGION_COLLECTION, ContinuousArgs*);
+    template double continuous_integration_over_region_collections(
         environment::MultiModalBivariateGaussian,
-        cubpackpp::REGION_COLLECTION);
-    template double integration_over_region_collections(double (*)(double, double), cubpackpp::REGION_COLLECTION);
+        cubpackpp::REGION_COLLECTION,
+        ContinuousArgs*);
+    template double continuous_integration_over_region_collections(
+        double (*)(double, double),
+        cubpackpp::REGION_COLLECTION,
+        ContinuousArgs*);
+
+    /***************************************
+     * CONTINUOUS INTEGRATION OVER POLYGON *
+     ***************************************/
+
+    template<typename FUNC>
+    double continuous_integration_over_polygon(FUNC f, std::unique_ptr<geos::geom::Geometry> polygon, ContinuousArgs* args)
+    {
+      auto triangulated = geometry::triangulate_polygon(std::move(polygon));
+      cubpackpp::REGION_COLLECTION rg;
+      geometry::geos_to_cubpack(std::move(triangulated), rg);
+      return continuous_integration_over_region_collections(f, rg, args);
+    };
+    template double
+    continuous_integration_over_polygon(function::Function, std::unique_ptr<geos::geom::Geometry>, ContinuousArgs*);
+    template double continuous_integration_over_polygon(
+        environment::MultiModalBivariateGaussian,
+        std::unique_ptr<geos::geom::Geometry>,
+        ContinuousArgs*);
+    template double
+    continuous_integration_over_polygon(double (*)(double, double), std::unique_ptr<geos::geom::Geometry>, ContinuousArgs*);
+
+    template<typename FUNC>
+    double continuous_integration_over_polygon(FUNC f, geometry::STLCoords polygon, ContinuousArgs* args)
+    {
+      const geos::geom::GeometryFactory* geometry_factory = geos::geom::GeometryFactory::getDefaultInstance();
+      geos::geom::CoordinateSequence coordinate_sequence;
+      for (auto coord : polygon)
+      {
+        geos::geom::Coordinate coordinate(coord.first, coord.second);
+        coordinate_sequence.add(coordinate);
+      }
+      std::unique_ptr<geos::geom::LinearRing> linear_ring = geometry_factory->createLinearRing(coordinate_sequence);
+      std::unique_ptr<geos::geom::Polygon> geom = geometry_factory->createPolygon(std::move(linear_ring));
+      return continuous_integration_over_polygon(f, std::move(geom), args);
+    };
+    template double
+    continuous_integration_over_polygon(function::Function, geometry::STLCoords polygon, ContinuousArgs*);
+    template double continuous_integration_over_polygon(
+        environment::MultiModalBivariateGaussian,
+        geometry::STLCoords polygon,
+        ContinuousArgs*);
+    template double
+    continuous_integration_over_polygon(double (*)(double, double), geometry::STLCoords polygon,  ContinuousArgs*);
+
+    /************************************
+     * CONTINUOUS INTEGRATION OVER PATH *
+     ************************************/
 
     template<typename FUNC, typename COORDS>
-    double integrate_over_buffered_line(FUNC f, COORDS coords, double d)
+    double continuous_integration_over_path(FUNC f, COORDS coords, ContinuousArgs* args)
     {
       std::unique_ptr<CoordinateSequenceCompat> cs = geometry::coord_sequence_from_array(coords);
       auto ls = geometry::create_linestring(std::move(cs));
-      auto buffered = geometry::buffer_linestring(std::move(ls), d);
-      auto triangulated = geometry::triangulate_polygon(std::move(buffered));
-      cubpackpp::REGION_COLLECTION rg;
-      geometry::geos_to_cubpack(std::move(triangulated), rg);
-      return integration_over_region_collections(f, rg);
+      auto buffered = geometry::buffer_linestring(std::move(ls), args->_buffer_radius_m);
+      return continuous_integration_over_polygon(f, std::move(buffered), args);
     }
+    template double continuous_integration_over_path(function::Function, geometry::EigenCoords, ContinuousArgs*);
+    template double continuous_integration_over_path(function::Function, geometry::STLCoords, ContinuousArgs*);
+    template double
+    continuous_integration_over_path(environment::MultiModalBivariateGaussian, geometry::EigenCoords, ContinuousArgs*);
+    template double
+    continuous_integration_over_path(environment::MultiModalBivariateGaussian, geometry::STLCoords, ContinuousArgs*);
+    template double continuous_integration_over_path(double (*)(double, double), geometry::EigenCoords, ContinuousArgs*);
+    template double continuous_integration_over_path(double (*)(double, double), geometry::STLCoords, ContinuousArgs*);
 
-    template double integrate_over_buffered_line(function::Function, geometry::EigenCoords, double);
-    template double integrate_over_buffered_line(function::Function, geometry::STLCoords, double);
-    template double integrate_over_buffered_line(environment::MultiModalBivariateGaussian, geometry::EigenCoords, double);
-    template double integrate_over_buffered_line(environment::MultiModalBivariateGaussian, geometry::STLCoords, double);
-    template double integrate_over_buffered_line(double (*)(double, double), geometry::EigenCoords, double);
-    template double integrate_over_buffered_line(double (*)(double, double), geometry::STLCoords, double);
+    /*************************************
+     * CONTINUOUS INTEGRATION OVER PATHS *
+     *************************************/
 
-    /// \brief Integrate multiple paths by buffering and merging before integrating.
-    /// \tparam FUNC The callable type.
-    /// \tparam COORDS The data strucutre of coordinates.
-    /// \param f The callable holding the function to be integrated.
-    /// \param coords_vec The std::vector of coordinates. Each object should be the coordinates for a distinc path.
-    /// \param d The integration radius.
-    /// \return The integration result.
     template<typename FUNC, typename COORDS>
-    double integrate_over_buffered_lines(FUNC f, std::vector<COORDS> coords_vec, double d)
+    double continuous_integration_over_paths(FUNC f, std::vector<COORDS> coords_vec, ContinuousArgs* args)
     {
       std::unique_ptr<Geometry> union_buffered_paths =
           geos::geom::GeometryFactory::getDefaultInstance()->createEmptyGeometry();
@@ -82,37 +133,54 @@ namespace jpathgen
       {
         std::unique_ptr<CoordinateSequenceCompat> cs = geometry::coord_sequence_from_array(coords);
         auto ls = geometry::create_linestring(std::move(cs));
-        std::unique_ptr<geos::geom::Geometry> buffered = geometry::buffer_linestring(std::move(ls), d);
+        std::unique_ptr<geos::geom::Geometry> buffered = geometry::buffer_linestring(std::move(ls), args->_buffer_radius_m);
         union_buffered_paths = union_buffered_paths->Union(buffered.get());
       }
-      auto triangulated = geometry::triangulate_polygon(std::move(union_buffered_paths));
-      cubpackpp::REGION_COLLECTION rg;
-      geometry::geos_to_cubpack(std::move(triangulated), rg);
-      return integration_over_region_collections(f, rg);
+      return continuous_integration_over_polygon(f, std::move(union_buffered_paths), args);
     }
 
-    template double integrate_over_buffered_lines(function::Function, std::vector<geometry::EigenCoords>, double);
-    template double integrate_over_buffered_lines(function::Function, std::vector<geometry::STLCoords>, double);
     template double
-    integrate_over_buffered_lines(environment::MultiModalBivariateGaussian, std::vector<geometry::EigenCoords>, double);
+    continuous_integration_over_paths(function::Function, std::vector<geometry::EigenCoords>, ContinuousArgs*);
+    template double continuous_integration_over_paths(function::Function, std::vector<geometry::STLCoords>, ContinuousArgs*);
+    template double continuous_integration_over_paths(
+        environment::MultiModalBivariateGaussian,
+        std::vector<geometry::EigenCoords>,
+        ContinuousArgs*);
+    template double continuous_integration_over_paths(
+        environment::MultiModalBivariateGaussian,
+        std::vector<geometry::STLCoords>,
+        ContinuousArgs*);
     template double
-    integrate_over_buffered_lines(environment::MultiModalBivariateGaussian, std::vector<geometry::STLCoords>, double);
-    template double integrate_over_buffered_lines(double (*)(double, double), std::vector<geometry::EigenCoords>, double);
-    template double integrate_over_buffered_lines(double (*)(double, double), std::vector<geometry::STLCoords>, double);
+    continuous_integration_over_paths(double (*)(double, double), std::vector<geometry::EigenCoords>, ContinuousArgs*);
+    template double
+    continuous_integration_over_paths(double (*)(double, double), std::vector<geometry::STLCoords>, ContinuousArgs*);
+
+    /*****************************************
+     * CONTINUOUS INTEGRATION OVER RECTANGLE *
+     *****************************************/
 
     template<typename FUNC>
-    double integrate_over_rect(FUNC f, double left, double right, double bottom, double top)
+    double
+    continuous_integration_over_rectangle(FUNC f, double left, double right, double bottom, double top, ContinuousArgs* args)
     {
       cubpackpp::REGION_COLLECTION rc;
       cubpackpp::Point A(left, bottom), B(left, top), C(right, bottom);
       cubpackpp::RECTANGLE rect(A, B, C);
       rc += rect;
 
-      return integration_over_region_collections(f, rc);
+      return continuous_integration_over_region_collections(f, rc, args);
     }
-    template double integrate_over_rect(environment::MultiModalBivariateGaussian, double, double, double, double);
-    template double integrate_over_rect(function::Function, double, double, double, double);
-    template double integrate_over_rect(double (*)(double, double), double, double, double, double);
+    template double continuous_integration_over_rectangle(
+        environment::MultiModalBivariateGaussian,
+        double,
+        double,
+        double,
+        double,
+        ContinuousArgs*);
+    template double
+    continuous_integration_over_rectangle(function::Function, double, double, double, double, ContinuousArgs*);
+    template double
+    continuous_integration_over_rectangle(double (*)(double, double), double, double, double, double, ContinuousArgs*);
 
   }  // namespace integration
 }  // namespace jpathgen

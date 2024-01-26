@@ -1,5 +1,8 @@
-// #  Copyright 2023 Jan-Hendrik Ewers
-// #  SPDX-License-Identifier: GPL-3.0-only
+/*
+ * Copyright (c) 2024.  Jan-Hendrik Ewers
+ * SPDX-License-Identifier: GPL-3.0-only
+ */
+
 #include <jpathgen/environment.h>
 #include <jpathgen/function.h>
 #include <jpathgen/integration.h>
@@ -18,9 +21,9 @@ using namespace jpathgen::environment;
 using namespace jpathgen::geometry;
 using Catch::Matchers::WithinRel;
 
-double fn1(double a, double b)
+double fn1(double a, double b, double c = 1)
 {
-  return 1;
+  return c;
 }
 
 MultiModalBivariateGaussian generate_mmbg(int n_modes = 1)

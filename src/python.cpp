@@ -1,6 +1,7 @@
-// #  Copyright 2023 Jan-Hendrik Ewers
-// #  SPDX-License-Identifier: GPL-3.0-only
-
+/*
+ * Copyright (c) 2024.  Jan-Hendrik Ewers
+ * SPDX-License-Identifier: GPL-3.0-only
+ */
 #include <pybind11/functional.h>
 #include <pybind11/operators.h>
 

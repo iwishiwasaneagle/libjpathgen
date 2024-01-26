@@ -27,7 +27,8 @@ set(headers
 
 set(test_sources
         src/environment_test.cpp
-        src/integration_test.cpp
+        src/integration/continuous_test.cpp
+        src/integration/discrete_test.cpp
         )
 
 set(fuzz_sources
