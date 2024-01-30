@@ -300,3 +300,20 @@ TEST_CASE("Buffered paths are continuously integrated over", "[continuous, integ
     REQUIRE_THAT(result, WithinRel(polygon->getArea()));
   }
 }
+/***********************************
+ * TEST INTEGRATION OVER RECTANGLE *
+ **********************************/
+
+TEST_CASE("Rectangle is continuously integrated over", "[continuous, integration, rectangle]")
+{
+  double result;
+  auto *continuous_args = new ContinuousArgs(2.5, 0.05, 0.0);
+  SECTION("A unit rectangle")
+  {
+    std::vector<double> corners = GENERATE(std::vector<double>{ 0, 1, 0, 1 }, std::vector<double>{ 0, 0.5, 0, 2 });
+
+    result = continuous_integration_over_rectangle(
+        constant_return_fn, corners[0], corners[1], corners[2], corners[3], continuous_args);
+    REQUIRE_THAT(1.0, WithinRel(result));
+  }
+}

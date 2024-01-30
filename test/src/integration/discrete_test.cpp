@@ -230,3 +230,27 @@ TEST_CASE("Buffered paths are discretely integrated over", "[discrete, integrati
     REQUIRE_THAT(result, WithinRel(polygon->getArea(), REL_ACCEPTABLE_ERROR));
   }
 }
+
+/***********************************
+ * TEST INTEGRATION OVER RECTANGLE *
+ **********************************/
+
+TEST_CASE("Rectangle is discretely integrated over", "[discrete, integration, rectangle]")
+{
+  double result;
+  SECTION("A unit rectangle")
+  {
+    auto *discrete_args = GENERATE(
+        new DiscreteArgs(0.0, N, M, 0, 1, 0, 1), new DiscreteArgs(0.0, N, M, 0, 0.5, 0, 2)
+
+    );
+    result = discrete_integration_over_rectangle(
+        constant_return_fn,
+        discrete_args->get_minx(),
+        discrete_args->get_maxx(),
+        discrete_args->get_miny(),
+        discrete_args->get_maxy(),
+        discrete_args);
+    REQUIRE_THAT(1.0, WithinRel(result, REL_ACCEPTABLE_ERROR));
+  }
+}
