@@ -80,13 +80,9 @@ namespace jpathgen
     double continuous_integration_over_polygon(FUNC f, geometry::STLCoords polygon, ContinuousArgs* args)
     {
       const geos::geom::GeometryFactory* geometry_factory = geos::geom::GeometryFactory::getDefaultInstance();
-      geos::geom::CoordinateSequence coordinate_sequence;
-      for (auto coord : polygon)
-      {
-        geos::geom::Coordinate coordinate(coord.first, coord.second);
-        coordinate_sequence.add(coordinate);
-      }
-      std::unique_ptr<geos::geom::LinearRing> linear_ring = geometry_factory->createLinearRing(coordinate_sequence);
+
+      std::unique_ptr<geos::geom::CoordinateSequence> coordinate_sequence = geometry::coord_sequence_from_array(polygon);
+      std::unique_ptr<geos::geom::LinearRing> linear_ring = geometry_factory->createLinearRing(std::move(coordinate_sequence));
       std::unique_ptr<geos::geom::Polygon> geom = geometry_factory->createPolygon(std::move(linear_ring));
       return continuous_integration_over_polygon(f, std::move(geom), args);
     };
