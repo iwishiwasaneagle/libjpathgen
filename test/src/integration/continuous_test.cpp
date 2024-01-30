@@ -19,57 +19,59 @@ using namespace jpathgen::environment;
 using namespace jpathgen::geometry;
 using Catch::Matchers::WithinRel;
 
-double constant_return_fn(double a, double b)
+namespace
 {
-  return 1;
-}
-
-MultiModalBivariateGaussian generate_mmbg(int n_modes = 1)
-{
-  MUS mus = Eigen::Matrix<double, -1, 2>::Zero(n_modes, 2);
-  COV cov = COV::Identity();
-  COVS covs = Eigen::Matrix<double, -1, 2>::Zero(n_modes * 2, 2);
-
-  for (int i = 0; i < n_modes; ++i)
-  {
-    covs.block<2, 2>(i * 2, 0) = cov;
-  }
-  MultiModalBivariateGaussian mmbg(mus, covs);
-  return mmbg;
-}
-
-double fn_step(double a, double b, double width = 1)
-{
-  if (a >= -width / 2 && a <= width / 2 && b >= -width / 2 && b <= width / 2)
+  double constant_return_fn(double a, double b)
   {
     return 1;
   }
-  return 0;
-}
 
-EigenCoords build_coords(int N)
-{
-  Eigen::MatrixXd angles = Eigen::MatrixXd::Random(N, 1);
-  Eigen::MatrixX2d coords;
-  coords.resize(N, 2);
-  for (int i = 0; i < N; i++)
+  MultiModalBivariateGaussian generate_mmbg(int n_modes = 1)
   {
-    auto sliced_angles = angles.block(0,0,i,1).array();
-    coords(i, 0) = sliced_angles.cos().sum();
-    coords(i, 1) = sliced_angles.sin().sum();
-  }
-  return coords;
-}
-STLCoords eigen_to_stl_coords(EigenCoords coords)
-{
-  STLCoords stl_coords;
-  for (int i = 0; i < coords.rows(); i++)
-  {
-    stl_coords.emplace_back( coords(i, 0), coords(i, 1) );
-  }
-  return stl_coords;
-}
+    MUS mus = Eigen::Matrix<double, -1, 2>::Zero(n_modes, 2);
+    COV cov = COV::Identity();
+    COVS covs = Eigen::Matrix<double, -1, 2>::Zero(n_modes * 2, 2);
 
+    for (int i = 0; i < n_modes; ++i)
+    {
+      covs.block<2, 2>(i * 2, 0) = cov;
+    }
+    MultiModalBivariateGaussian mmbg(mus, covs);
+    return mmbg;
+  }
+
+  double fn_step(double a, double b, double width = 1)
+  {
+    if (a >= -width / 2 && a <= width / 2 && b >= -width / 2 && b <= width / 2)
+    {
+      return 1;
+    }
+    return 0;
+  }
+
+  EigenCoords build_coords(int N)
+  {
+    Eigen::MatrixXd angles = Eigen::MatrixXd::Random(N, 1);
+    Eigen::MatrixX2d coords;
+    coords.resize(N, 2);
+    for (int i = 0; i < N; i++)
+    {
+      auto sliced_angles = angles.block(0,0,i,1).array();
+      coords(i, 0) = sliced_angles.cos().sum();
+      coords(i, 1) = sliced_angles.sin().sum();
+    }
+    return coords;
+  }
+  STLCoords eigen_to_stl_coords(EigenCoords coords)
+  {
+    STLCoords stl_coords;
+    for (int i = 0; i < coords.rows(); i++)
+    {
+      stl_coords.emplace_back( coords(i, 0), coords(i, 1) );
+    }
+    return stl_coords;
+  }
+}
 /*******************************************
  * TEST INTEGRATION OVER REGION COLLECTION *
  *******************************************/
@@ -235,13 +237,13 @@ TEST_CASE("Polygon is integrated over", "[continuous, integration, polygon, geos
   }
   SECTION("A rectangle as a vector of coords")
   {
-    STLCoords coorners;
-    coorners.push_back({ 0, 0 });
-    coorners.push_back({ 0, 0.5 });
-    coorners.push_back({ 2, 0.5 });
-    coorners.push_back({ 2, 0 });
-    coorners.push_back({ 0, 0 });
-    result = continuous_integration_over_polygon(constant_return_fn, coorners, continuous_args);
+    STLCoords corners;
+    corners.push_back({ 0, 0 });
+    corners.push_back({ 0, 0.5 });
+    corners.push_back({ 2, 0.5 });
+    corners.push_back({ 2, 0 });
+    corners.push_back({ 0, 0 });
+    result = continuous_integration_over_polygon(constant_return_fn, corners, continuous_args);
     REQUIRE_THAT(1.0, WithinRel(result));
   }
 }
@@ -261,13 +263,13 @@ TEST_CASE("Buffered path is integrated over", "[continuous, integration, path, g
   double result = NAN;
   auto *continuous_args = new ContinuousArgs(buffer_radius_m, abs_err_req, rel_err_req);
 
-  DYNAMIC_SECTION("A" << n_wps << "-waypoint path")
+  DYNAMIC_SECTION("A " << n_wps << "-waypoint path")
   {
     EigenCoords path = Eigen::Matrix<double, -1, 2>::Random(n_wps, 2);
 
     std::unique_ptr<geos::geom::CoordinateSequenceCompat> cs = coord_sequence_from_array(path);
     auto ls = create_linestring(std::move(cs));
-    auto buffered_path = buffer_linestring(std::move(ls), continuous_args->_buffer_radius_m);
+    auto buffered_path = buffer_linestring(std::move(ls), continuous_args->get_buffer_radius_m());
 
     result = continuous_integration_over_path(constant_return_fn, path, continuous_args);
 
@@ -302,7 +304,7 @@ TEST_CASE("Buffered paths are integrated over", "[continuous, integration, paths
 
     std::unique_ptr<geos::geom::CoordinateSequenceCompat> cs = coord_sequence_from_array(path);
     auto ls = create_linestring(std::move(cs));
-    auto buffered_path = buffer_linestring(std::move(ls), continuous_args->_buffer_radius_m);
+    auto buffered_path = buffer_linestring(std::move(ls), continuous_args->get_buffer_radius_m());
     result = continuous_integration_over_path(constant_return_fn, path, continuous_args);
     REQUIRE_THAT(result, WithinRel(buffered_path->getArea(), 0.001));
   }
@@ -320,7 +322,7 @@ TEST_CASE("Buffered paths are integrated over", "[continuous, integration, paths
 
     std::unique_ptr<geos::geom::CoordinateSequenceCompat> cs = coord_sequence_from_array(path);
     auto ls = create_linestring(std::move(cs));
-    auto buffered_path = buffer_linestring(std::move(ls), continuous_args->_buffer_radius_m);
+    auto buffered_path = buffer_linestring(std::move(ls), continuous_args->get_buffer_radius_m());
     result = continuous_integration_over_path(constant_return_fn, path, continuous_args);
     REQUIRE_THAT(result, WithinRel(buffered_path->getArea(), 0.001));
   }

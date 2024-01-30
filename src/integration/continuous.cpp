@@ -2,8 +2,6 @@
  * Copyright (c) 2024.  Jan-Hendrik Ewers
  * SPDX-License-Identifier: GPL-3.0-only
  */
-#include "jpathgen/integration.h"
-
 #include <cubpackpp/cubpackpp.h>
 #include <geos/geom/Coordinate.h>
 #include <geos/operation/union/UnaryUnionOp.h>
@@ -42,7 +40,7 @@ namespace jpathgen
         cubpackpp::REGION_COLLECTION rc,
         ContinuousArgs* args)
     {
-      return cubpackpp::Integrate(fn, rc, args->_abs_err_req, args->_rel_err_req);
+      return cubpackpp::Integrate(fn, rc, args->get_abs_err_req(), args->get_rel_err_req());
     }
     template double
     continuous_integration_over_region_collections(function::Function, cubpackpp::REGION_COLLECTION, ContinuousArgs*);
@@ -82,18 +80,18 @@ namespace jpathgen
       const geos::geom::GeometryFactory* geometry_factory = geos::geom::GeometryFactory::getDefaultInstance();
 
       std::unique_ptr<geos::geom::CoordinateSequence> coordinate_sequence = geometry::coord_sequence_from_array(polygon);
-      std::unique_ptr<geos::geom::LinearRing> linear_ring = geometry_factory->createLinearRing(std::move(coordinate_sequence));
+      std::unique_ptr<geos::geom::LinearRing> linear_ring =
+          geometry_factory->createLinearRing(std::move(coordinate_sequence));
       std::unique_ptr<geos::geom::Polygon> geom = geometry_factory->createPolygon(std::move(linear_ring));
       return continuous_integration_over_polygon(f, std::move(geom), args);
     };
-    template double
-    continuous_integration_over_polygon(function::Function, geometry::STLCoords polygon, ContinuousArgs*);
+    template double continuous_integration_over_polygon(function::Function, geometry::STLCoords polygon, ContinuousArgs*);
     template double continuous_integration_over_polygon(
         environment::MultiModalBivariateGaussian,
         geometry::STLCoords polygon,
         ContinuousArgs*);
     template double
-    continuous_integration_over_polygon(double (*)(double, double), geometry::STLCoords polygon,  ContinuousArgs*);
+    continuous_integration_over_polygon(double (*)(double, double), geometry::STLCoords polygon, ContinuousArgs*);
 
     /************************************
      * CONTINUOUS INTEGRATION OVER PATH *
@@ -104,7 +102,7 @@ namespace jpathgen
     {
       std::unique_ptr<CoordinateSequenceCompat> cs = geometry::coord_sequence_from_array(coords);
       auto ls = geometry::create_linestring(std::move(cs));
-      auto buffered = geometry::buffer_linestring(std::move(ls), args->_buffer_radius_m);
+      auto buffered = geometry::buffer_linestring(std::move(ls), args->get_buffer_radius_m());
       return continuous_integration_over_polygon(f, std::move(buffered), args);
     }
     template double continuous_integration_over_path(function::Function, geometry::EigenCoords, ContinuousArgs*);
@@ -129,7 +127,7 @@ namespace jpathgen
       {
         std::unique_ptr<CoordinateSequenceCompat> cs = geometry::coord_sequence_from_array(coords);
         auto ls = geometry::create_linestring(std::move(cs));
-        std::unique_ptr<geos::geom::Geometry> buffered = geometry::buffer_linestring(std::move(ls), args->_buffer_radius_m);
+        std::unique_ptr<geos::geom::Geometry> buffered = geometry::buffer_linestring(std::move(ls), args->get_buffer_radius_m());
         union_buffered_paths = union_buffered_paths->Union(buffered.get());
       }
       return continuous_integration_over_polygon(f, std::move(union_buffered_paths), args);
