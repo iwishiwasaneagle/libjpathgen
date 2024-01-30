@@ -132,7 +132,7 @@ TEST_CASE("Buffered path is discretely integrated over", "[discrete, integration
 
   double result = NAN;
 
-  DYNAMIC_SECTION("A " << n_wps << "-waypoint path with a buffer radius of " << buffer_radius_m <<"m" )
+  DYNAMIC_SECTION("A " << n_wps << "-waypoint path with a buffer radius of " << buffer_radius_m << "m")
   {
     EigenCoords path = Eigen::Matrix<double, -1, 2>::Random(n_wps, 2);
 
@@ -159,24 +159,41 @@ TEST_CASE("Buffered paths are discretely integrated over", "[discrete, integrati
 
   double result = NAN;
 
+  std::unique_ptr<geos::geom::CoordinateSequenceCompat> cs;
+  std::unique_ptr<geos::geom::LineString> ls;
+  std::unique_ptr<geos::geom::Geometry> buffered_path;
+  std::unique_ptr<geos::geom::Geometry> polygon = geos::geom::GeometryFactory::getDefaultInstance()->createPolygon();
   DYNAMIC_SECTION("EigenCoords with " << n_paths << " paths")
   {
     EigenCoords path;
     std::vector<EigenCoords> paths{};
-
+    double minx = INFINITY, maxx = -INFINITY, miny = INFINITY, maxy = -INFINITY;
     for (int i = 0; i < n_paths; i++)
     {
       path = build_coords(5);
-      paths.push_back(path);
-    }
 
-    std::unique_ptr<geos::geom::CoordinateSequenceCompat> cs = coord_sequence_from_array(path);
-    auto envelope = cs->getEnvelope();
-    auto ls = create_linestring(std::move(cs));
-    auto *discrete_args = new DiscreteArgs(buffer_radius_m, N, M, envelope, 0.01, buffer_radius_m);
-    auto buffered_path = buffer_linestring(std::move(ls), discrete_args->get_buffer_radius_m());
-    result = discrete_integration_over_path(constant_return_fn, path, discrete_args);
-    REQUIRE_THAT(result, WithinRel(buffered_path->getArea(), REL_ACCEPTABLE_ERROR));
+      minx = std::min(minx, path.col(0).minCoeff());
+      maxx = std::max(maxx, path.col(0).maxCoeff());
+      miny = std::min(miny, path.col(1).minCoeff());
+      maxy = std::max(maxy, path.col(1).maxCoeff());
+
+      paths.push_back(path);
+
+      cs = coord_sequence_from_array(path);
+      ls = create_linestring(std::move(cs));
+      buffered_path = buffer_linestring(std::move(ls), buffer_radius_m);
+      polygon = polygon->Union(buffered_path.get());
+    }
+    auto *args = new DiscreteArgs(
+        buffer_radius_m,
+        N,
+        M,
+        minx - buffer_radius_m,
+        maxx + buffer_radius_m,
+        miny - buffer_radius_m,
+        maxy + buffer_radius_m);
+    result = discrete_integration_over_paths(constant_return_fn, paths, args);
+    REQUIRE_THAT(result, WithinRel(polygon->getArea(), REL_ACCEPTABLE_ERROR));
   }
 
   DYNAMIC_SECTION("STLCoords with " << n_paths << " paths")
@@ -184,18 +201,32 @@ TEST_CASE("Buffered paths are discretely integrated over", "[discrete, integrati
     STLCoords path;
     std::vector<STLCoords> paths{};
 
+    double minx = INFINITY, maxx = -INFINITY, miny = INFINITY, maxy = -INFINITY;
     for (int i = 0; i < n_paths; i++)
     {
-      path = eigen_to_stl_coords(build_coords(5));
+      EigenCoords eigen_path = build_coords(5);
+      path = eigen_to_stl_coords(eigen_path);
       paths.push_back(path);
-    }
 
-    std::unique_ptr<geos::geom::CoordinateSequenceCompat> cs = coord_sequence_from_array(path);
-    auto envelope = cs->getEnvelope();
-    auto ls = create_linestring(std::move(cs));
-    auto *discrete_args = new DiscreteArgs(buffer_radius_m, N, M, envelope, 0.01, buffer_radius_m);
-    auto buffered_path = buffer_linestring(std::move(ls), discrete_args->get_buffer_radius_m());
-    result = discrete_integration_over_path(constant_return_fn, path, discrete_args);
-    REQUIRE_THAT(result, WithinRel(buffered_path->getArea(), REL_ACCEPTABLE_ERROR));
+      minx = std::min(minx, eigen_path.col(0).minCoeff());
+      maxx = std::max(maxx, eigen_path.col(0).maxCoeff());
+      miny = std::min(miny, eigen_path.col(1).minCoeff());
+      maxy = std::max(maxy, eigen_path.col(1).maxCoeff());
+
+      cs = coord_sequence_from_array(path);
+      ls = create_linestring(std::move(cs));
+      buffered_path = buffer_linestring(std::move(ls), buffer_radius_m);
+      polygon = polygon->Union(buffered_path.get());
+    }
+    auto *args = new DiscreteArgs(
+        buffer_radius_m,
+        N,
+        M,
+        minx - buffer_radius_m,
+        maxx + buffer_radius_m,
+        miny - buffer_radius_m,
+        maxy + buffer_radius_m);
+    result = discrete_integration_over_paths(constant_return_fn, paths, args);
+    REQUIRE_THAT(result, WithinRel(polygon->getArea(), REL_ACCEPTABLE_ERROR));
   }
 }

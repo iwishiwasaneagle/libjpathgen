@@ -260,22 +260,26 @@ TEST_CASE("Buffered paths are continuously integrated over", "[continuous, integ
   double result = NAN;
   auto *continuous_args = new ContinuousArgs(buffer_radius_m, abs_err_req, rel_err_req);
 
+  std::unique_ptr<geos::geom::CoordinateSequenceCompat> cs;
+  std::unique_ptr<geos::geom::LineString> ls;
+  std::unique_ptr<geos::geom::Geometry> buffered_path;
+  std::unique_ptr<geos::geom::Geometry> polygon = geos::geom::GeometryFactory::getDefaultInstance()->createEmptyGeometry();
   DYNAMIC_SECTION("EigenCoords with " << n_paths << " paths")
   {
     EigenCoords path;
     std::vector<EigenCoords> paths{};
-
     for (int i = 0; i < n_paths; i++)
     {
       path = build_coords(5);
       paths.push_back(path);
-    }
 
-    std::unique_ptr<geos::geom::CoordinateSequenceCompat> cs = coord_sequence_from_array(path);
-    auto ls = create_linestring(std::move(cs));
-    auto buffered_path = buffer_linestring(std::move(ls), continuous_args->get_buffer_radius_m());
-    result = continuous_integration_over_path(constant_return_fn, path, continuous_args);
-    REQUIRE_THAT(result, WithinRel(buffered_path->getArea(), 0.001));
+      cs = coord_sequence_from_array(path);
+      ls = create_linestring(std::move(cs));
+      buffered_path = buffer_linestring(std::move(ls), continuous_args->get_buffer_radius_m());
+      polygon = polygon->Union(buffered_path.get());
+    }
+    result = continuous_integration_over_paths(constant_return_fn, paths, continuous_args);
+    REQUIRE_THAT(result, WithinRel(polygon->getArea()));
   }
 
   DYNAMIC_SECTION("STLCoords with " << n_paths << " paths")
@@ -287,12 +291,12 @@ TEST_CASE("Buffered paths are continuously integrated over", "[continuous, integ
     {
       path = eigen_to_stl_coords(build_coords(5));
       paths.push_back(path);
+      cs = coord_sequence_from_array(path);
+      ls = create_linestring(std::move(cs));
+      buffered_path = buffer_linestring(std::move(ls), continuous_args->get_buffer_radius_m());
+      polygon = polygon->Union(buffered_path.get());
     }
-
-    std::unique_ptr<geos::geom::CoordinateSequenceCompat> cs = coord_sequence_from_array(path);
-    auto ls = create_linestring(std::move(cs));
-    auto buffered_path = buffer_linestring(std::move(ls), continuous_args->get_buffer_radius_m());
-    result = continuous_integration_over_path(constant_return_fn, path, continuous_args);
-    REQUIRE_THAT(result, WithinRel(buffered_path->getArea(), 0.001));
+    result = continuous_integration_over_paths(constant_return_fn, paths, continuous_args);
+    REQUIRE_THAT(result, WithinRel(polygon->getArea()));
   }
 }
