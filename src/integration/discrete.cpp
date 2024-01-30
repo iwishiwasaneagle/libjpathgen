@@ -28,22 +28,25 @@ namespace jpathgen
     double discrete_integration_over_polygon(FUNC f, std::unique_ptr<geos::geom::Geometry> polygon, DiscreteArgs* args)
     {
       double sum = 0;
-      int count = 0;
       for (auto xi : Eigen::VectorXd::LinSpaced(args->get_N(), args->get_minx(), args->get_maxx()))
       {
         for (auto yi : Eigen::VectorXd::LinSpaced(args->get_M(), args->get_miny(), args->get_maxy()))
         {
-          std::unique_ptr<geos::geom::Point> pt =
-              geos::geom::GeometryFactory::getDefaultInstance()->createPoint();
-          pt->setXY(xi,yi);
+          const geos::geom::Coordinate coord(xi, yi);
+#ifdef GEOS_COMPATIBILITY_REQUIRED
+          geos::geom::Point* pt_ptr = geos::geom::GeometryFactory::getDefaultInstance()->createPoint(coord);
+          std::unique_ptr<geos::geom::Point> pt(pt_ptr);
+#else
+          std::unique_ptr<geos::geom::Point> pt = geos::geom::GeometryFactory::getDefaultInstance()->createPoint(coord);
+#endif
           if (polygon->contains(pt.get()))
           {
             sum += f(xi, yi);
-            count++;
           }
         }
       }
-      return sum * (args->get_maxx() - args->get_minx()) * (args->get_maxy() - args->get_miny()) / (args->get_N()* args->get_M());
+      return sum * (args->get_maxx() - args->get_minx()) * (args->get_maxy() - args->get_miny()) /
+             (args->get_N() * args->get_M());
     }
     template double
     discrete_integration_over_polygon(function::Function, std::unique_ptr<geos::geom::Geometry>, DiscreteArgs*);
@@ -123,7 +126,8 @@ namespace jpathgen
       {
         std::unique_ptr<CoordinateSequenceCompat> cs = geometry::coord_sequence_from_array(coords);
         auto ls = geometry::create_linestring(std::move(cs));
-        std::unique_ptr<geos::geom::Geometry> buffered = geometry::buffer_linestring(std::move(ls), args->get_buffer_radius_m());
+        std::unique_ptr<geos::geom::Geometry> buffered =
+            geometry::buffer_linestring(std::move(ls), args->get_buffer_radius_m());
         union_buffered_paths = union_buffered_paths->Union(buffered.get());
       }
       return discrete_integration_over_polygon(f, std::move(union_buffered_paths), args);

@@ -76,7 +76,7 @@ namespace
  * TEST INTEGRATION OVER REGION COLLECTION *
  *******************************************/
 
-TEST_CASE("Region collection is integrated over", "[continuous, integration, region_collection]")
+TEST_CASE("Region collection is continuously integrated over", "[continuous, integration, region_collection]")
 {
   double abs_err_req = GENERATE(0, 1e-10, 1e-6);
   double rel_err_req = GENERATE(0, 0.01, 0.05);
@@ -149,7 +149,7 @@ TEST_CASE("Region collection is integrated over", "[continuous, integration, reg
  * TEST INTEGRATION OVER POLYGON *
  *********************************/
 
-TEST_CASE("Polygon is integrated over", "[continuous, integration, polygon, geos]")
+TEST_CASE("Polygon is continuously integrated over", "[continuous, integration, polygon, geos]")
 {
   auto geometry_factory = geos::geom::GeometryFactory::getDefaultInstance();
 
@@ -221,7 +221,7 @@ TEST_CASE("Polygon is integrated over", "[continuous, integration, polygon, geos
  * TEST INTEGRATION OVER PATH *
  ******************************/
 
-TEST_CASE("Buffered path is integrated over", "[continuous, integration, path, geos]")
+TEST_CASE("Buffered path is continuously integrated over", "[continuous, integration, path, geos]")
 {
   int n_wps = GENERATE(2, 5, 10);
 
@@ -250,7 +250,7 @@ TEST_CASE("Buffered path is integrated over", "[continuous, integration, path, g
  * TEST INTEGRATION OVER PATHS *
  *******************************/
 
-TEST_CASE("Buffered paths are integrated over", "[continuous, integration, paths, geos]")
+TEST_CASE("Buffered paths are continuously integrated over", "[continuous, integration, paths, geos]")
 {
   int n_paths = GENERATE(2, 5, 10);
   double abs_err_req = GENERATE(0, 1e-6);

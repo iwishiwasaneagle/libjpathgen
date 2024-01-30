@@ -19,8 +19,8 @@ using namespace jpathgen::geometry;
 using Catch::Matchers::WithinRel;
 
 #define REL_ACCEPTABLE_ERROR 0.01
-#define N                    1000
-#define M                    1000
+#define N                    2500
+#define M                    2500
 
 namespace
 {
@@ -79,51 +79,25 @@ namespace
  * TEST INTEGRATION OVER POLYGON *
  *********************************/
 
-TEST_CASE("Polygon is integrated over", "[discrete, integration, polygon, geos]")
+TEST_CASE("Polygon is discretely integrated over", "[discrete, integration, polygon, geos]")
 {
   auto geometry_factory = geos::geom::GeometryFactory::getDefaultInstance();
 
   double result = NAN;
-
-  SECTION("A unit square")
+  SECTION("Using STLCoords")
   {
-    STLCoords corners{ { 0, 0 }, { 0, 1 }, { 1, 1 }, { 1, 0 }, { 0, 0 } };
+    auto coords = GENERATE(
+        std::vector<STLCoords>{ { { 0, 0 }, { 0, 1 }, { 1, 1 }, { 1, 0 }, { 0, 0 } } },
+        std::vector<STLCoords>{ { { 0, 0 }, { 0, 0.5 }, { 2, 0.5 }, { 2, 0 }, { 0, 0 } } },
+        std::vector<STLCoords>{ { { -1, 0 }, { -0.5, 2 }, { 0, 0 }, { -1, 0 } },
+                                { { 1, 0 }, { 1.5, 2 }, { 2, 0 }, { 1, 0 } },
+                                { { 0, 0 }, { 0.5, 2 }, { 1, 0 }, { 0, 0 } } });
 
-    std::unique_ptr<geos::geom::CoordinateSequence> coordinate_sequence =
-        jpathgen::geometry::coord_sequence_from_array(corners);
-    std::unique_ptr<geos::geom::LinearRing> linear_ring = geometry_factory->createLinearRing(std::move(coordinate_sequence));
-    std::unique_ptr<geos::geom::Polygon> polygon = geometry_factory->createPolygon(std::move(linear_ring));
-
-    auto envelope = coordinate_sequence->getEnvelope();
-    auto *discrete_args = new DiscreteArgs(2.5, N, M, envelope);
-    result = discrete_integration_over_polygon(constant_return_fn, std::move(polygon), discrete_args);
-    REQUIRE_THAT(1.0, WithinRel(result, REL_ACCEPTABLE_ERROR));
-  }
-
-  SECTION("A rectangle")
-  {
-    STLCoords corners{ { 0, 0 }, { 0, 0.5 }, { 2, 0.5 }, { 2, 0 }, { 0, 0 } };
-
-    std::unique_ptr<geos::geom::CoordinateSequence> coordinate_sequence =
-        jpathgen::geometry::coord_sequence_from_array(corners);
-    std::unique_ptr<geos::geom::LinearRing> linear_ring = geometry_factory->createLinearRing(std::move(coordinate_sequence));
-    std::unique_ptr<geos::geom::Polygon> polygon = geometry_factory->createPolygon(std::move(linear_ring));
-
-    auto *discrete_args = new DiscreteArgs(2.5, N, M, -1, 3, -1, 3);
-    result = discrete_integration_over_polygon(constant_return_fn, std::move(polygon), discrete_args);
-    REQUIRE_THAT(1.0, WithinRel(result, REL_ACCEPTABLE_ERROR));
-  }
-  SECTION("Three triangles")
-  {
     std::vector<std::unique_ptr<geos::geom::Polygon>> polygons;
-    polygons.reserve(4);
-    std::vector<STLCoords> triangles{ { { -1, 0 }, { -0.5, 2 }, { 0, 0 }, { -1, 0 } },
-                                      { { 1, 0 }, { 1.5, 2 }, { 2, 0 }, { 1, 0 } },
-                                      { { 0, 0 }, { 0.5, 2 }, { 1, 0 }, { 0, 0 } } };
-    for (int i = 0; i < 3; i++)
+    for (int i = 0; i < coords.size(); i++)
     {
       std::unique_ptr<geos::geom::CoordinateSequence> coordinate_sequence =
-          jpathgen::geometry::coord_sequence_from_array(triangles[i]);
+          jpathgen::geometry::coord_sequence_from_array(coords[i]);
       std::unique_ptr<geos::geom::LinearRing> linear_ring =
           geometry_factory->createLinearRing(std::move(coordinate_sequence));
       std::unique_ptr<geos::geom::Polygon> polygon = geometry_factory->createPolygon(std::move(linear_ring));
@@ -131,13 +105,13 @@ TEST_CASE("Polygon is integrated over", "[discrete, integration, polygon, geos]"
     }
 
     std::unique_ptr<geos::geom::MultiPolygon> multi_polygon = geometry_factory->createMultiPolygon(std::move(polygons));
-    assert(multi_polygon->isValid());
-
     auto *discrete_args = new DiscreteArgs(2.5, N, M, -2, 3, -1, 3);
+    float area = multi_polygon->getArea();
     result = discrete_integration_over_polygon(constant_return_fn, std::move(multi_polygon), discrete_args);
 
-    REQUIRE_THAT(3.0, WithinRel(result, REL_ACCEPTABLE_ERROR));
+    REQUIRE_THAT(area, WithinRel(result, REL_ACCEPTABLE_ERROR));
   }
+
   SECTION("A rectangle as a vector of coords")
   {
     STLCoords corners{ { 0, 0 }, { 0, 0.5 }, { 2, 0.5 }, { 2, 0 }, { 0, 0 } };
@@ -151,7 +125,7 @@ TEST_CASE("Polygon is integrated over", "[discrete, integration, polygon, geos]"
  * TEST INTEGRATION OVER PATH *
  ******************************/
 
-TEST_CASE("Buffered path is integrated over", "[discrete, integration, path, geos]")
+TEST_CASE("Buffered path is discretely integrated over", "[discrete, integration, path, geos]")
 {
   int n_wps = GENERATE(2, 5, 10);
   double buffer_radius_m = GENERATE(1.0, 2.5, 5.);
@@ -167,7 +141,6 @@ TEST_CASE("Buffered path is integrated over", "[discrete, integration, path, geo
     auto *discrete_args = new DiscreteArgs(buffer_radius_m, N, M, envelope);
     auto ls = create_linestring(std::move(cs));
     auto buffered_path = buffer_linestring(std::move(ls), discrete_args->get_buffer_radius_m());
-
     result = discrete_integration_over_path(constant_return_fn, path, discrete_args);
 
     REQUIRE_THAT(result, WithinRel(buffered_path->getArea(), REL_ACCEPTABLE_ERROR));
@@ -178,7 +151,7 @@ TEST_CASE("Buffered path is integrated over", "[discrete, integration, path, geo
  * TEST INTEGRATION OVER PATHS *
  *******************************/
 
-TEST_CASE("Buffered paths are integrated over", "[discrete, integration, paths, geos]")
+TEST_CASE("Buffered paths are discretely integrated over", "[discrete, integration, paths, geos]")
 {
   int n_paths = GENERATE(2, 5, 10);
   double buffer_radius_m = GENERATE(0.1, 1.5);
@@ -197,8 +170,9 @@ TEST_CASE("Buffered paths are integrated over", "[discrete, integration, paths, 
     }
 
     std::unique_ptr<geos::geom::CoordinateSequenceCompat> cs = coord_sequence_from_array(path);
+    auto envelope = cs->getEnvelope();
     auto ls = create_linestring(std::move(cs));
-    auto *discrete_args = new DiscreteArgs(buffer_radius_m, N, M, cs->getEnvelope());
+    auto *discrete_args = new DiscreteArgs(buffer_radius_m, N, M, envelope, 0.5);
     auto buffered_path = buffer_linestring(std::move(ls), discrete_args->get_buffer_radius_m());
     result = discrete_integration_over_path(constant_return_fn, path, discrete_args);
     REQUIRE_THAT(result, WithinRel(buffered_path->getArea(), REL_ACCEPTABLE_ERROR));
@@ -216,8 +190,9 @@ TEST_CASE("Buffered paths are integrated over", "[discrete, integration, paths, 
     }
 
     std::unique_ptr<geos::geom::CoordinateSequenceCompat> cs = coord_sequence_from_array(path);
+    auto envelope = cs->getEnvelope();
     auto ls = create_linestring(std::move(cs));
-    auto *discrete_args = new DiscreteArgs(buffer_radius_m, N, M, cs->getEnvelope());
+    auto *discrete_args = new DiscreteArgs(buffer_radius_m, N, M, envelope);
     auto buffered_path = buffer_linestring(std::move(ls), discrete_args->get_buffer_radius_m());
     result = discrete_integration_over_path(constant_return_fn, path, discrete_args);
     REQUIRE_THAT(result, WithinRel(buffered_path->getArea(), REL_ACCEPTABLE_ERROR));

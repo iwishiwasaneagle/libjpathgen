@@ -38,7 +38,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             git build-essential cmake lcov \
-            libeigen3-dev pybind11-dev
+            libeigen3-dev
 
       - name: Install libgeos
         run: |
@@ -63,13 +63,16 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release
           cmake --build build -j $(nproc) --config Release
 
+      - name: Run C++ tests
+        run: |
+          ctest --output-on-failure --test-dir build -C Release
+
       - name: Install python deps
         run: |
           pip install "pybind11[global]>=2.11.0" ".[test]"
 
-      - name: Run tests
+      - name: Run python tests
         run: |
-          ctest --output-on-failure --test-dir build -C Release
           python -m pytest test/python
 
       - name: Prepare files for codecov
@@ -84,4 +87,3 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml,./coverage.info
           fail_ci_if_error: true
-
