@@ -54,10 +54,6 @@ jobs:
           cmake -Bbuild -H. -DBUILD_TESTING=OFF 
           sudo cmake --build build/ --target install -j $(nproc)
 
-      - name: Install python deps
-        run: |
-          pip install "pybind11[global]>=2.11.0" ".[test]"
-
       - name: Build C++
         run: |
           cmake -B build \
@@ -66,6 +62,10 @@ jobs:
             -DJPATHGEN_ENABLE_VECTORIZATION=OFF \
             -DCMAKE_BUILD_TYPE=Release
           cmake --build build -j $(nproc) --config Release
+
+      - name: Install python deps
+        run: |
+          pip install "pybind11[global]>=2.11.0" ".[test]"
 
       - name: Run tests
         run: |
