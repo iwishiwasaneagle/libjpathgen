@@ -1,7 +1,9 @@
 set(sources
         src/geometry.cpp
-        src/integration.cpp
+        src/integration/continuous.cpp
+        src/integration/discrete.cpp
         src/environment.cpp
+        src/geometry/coord_sequence_from_array.cpp
         )
 
 set(exe_sources
@@ -19,13 +21,13 @@ set(headers
         include/jpathgen/environment.h
         include/jpathgen/function.h
         include/jpathgen/error.h
-
         include/jpathgen/geos_compat.h
         )
 
 set(test_sources
         src/environment_test.cpp
-        src/integration_test.cpp
+        src/integration/continuous_test.cpp
+        src/integration/discrete_test.cpp
         )
 
 set(fuzz_sources

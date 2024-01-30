@@ -1,8 +1,9 @@
-#   Copyright 2023 Jan-Hendrik Ewers
-#   SPDX-License-Identifier: GPL-3.0-only
+#  Copyright (c) 2024.  Jan-Hendrik Ewers
+#  SPDX-License-Identifier: GPL-3.0-only
 import pytest
 import numpy as np
-from libjpathgen import MultiModalBivariateGaussian, integrate_over_rect
+from libjpathgen import MultiModalBivariateGaussian, continuous_integration_over_rectangle, \
+    discrete_integration_over_rectangle, ContinuousArgs, DiscreteArgs
 
 
 @pytest.fixture(params=[np.eye(2)])
@@ -56,16 +57,26 @@ def test_MMBG_vectorized_call_has_same_result(mmbg, inp):
 
 
 @pytest.mark.parametrize("bounds,exp", [
-    [(0.,1.,0.,1.),1.],
-    [(0.,2.,0.,1.),2.],
-    [(0.,2.,0.,2.),4.],
-    [(1.,2.,0.,1.),1.],
-    [(100.,200.,50.,150.),100.*100.],
+    [(0., 1., 0., 1.), 1.],
+    [(0., 2., 0., 1.), 2.],
+    [(0., 2., 0., 2.), 4.],
+    [(1., 2., 0., 1.), 1.],
+    [(100., 200., 50., 150.), 100. * 100.],
 ])
-def test_rect_integration(bounds,exp):
-    def f(x,y):
-        return 1
+def test_continuous_integration_over_rectangle(bounds, exp):
+    act = continuous_integration_over_rectangle(lambda x, y: 1, *bounds, ContinuousArgs(2.5, 0.05, 0))
+    assert np.isclose(act, exp)
 
-    act = integrate_over_rect(f, *bounds)
 
-    assert np.isclose(act,exp)
+@pytest.mark.parametrize("bounds,exp", [
+    [(0., 1., 0., 1.), 1.],
+    [(0., 2., 0., 1.), 2.],
+    [(0., 2., 0., 2.), 4.],
+    [(1., 2., 0., 1.), 1.],
+    [(100., 150., 50., 100.), 50. * 50.],
+])
+def testdiscrete_integration_over_rectangle(bounds, exp):
+    act = discrete_integration_over_rectangle(lambda x, y: 1, *bounds,
+                                              DiscreteArgs(2.5, 1500, 1500, bounds[0] * 0.95, bounds[1] * 1.05,
+                                                           bounds[2] * 0.95, bounds[3] * 1.05))
+    assert np.isclose(act, exp, rtol=1e-1)

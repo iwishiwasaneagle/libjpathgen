@@ -1,12 +1,11 @@
-// #  Copyright 2023 Jan-Hendrik Ewers
-// #  SPDX-License-Identifier: GPL-3.0-only
-
+/*
+ * Copyright (c) 2024.  Jan-Hendrik Ewers
+ * SPDX-License-Identifier: GPL-3.0-only
+ */
 #include "jpathgen/geometry.h"
 
 #include <geos/geom/Coordinate.h>
 #include <geos/triangulate/polygon/ConstrainedDelaunayTriangulator.h>
-
-#include "jpathgen/error.h"
 
 namespace jpathgen
 {
@@ -20,50 +19,6 @@ namespace jpathgen
     using cubpackpp::TRIANGLE;
 
     GeometryFactory* _global_factory;
-
-    std::unique_ptr<CAS> coord_sequence_from_array(EigenCoords coords)
-    {
-      Error(coords.size() == 0, "Coordinate sequence is empty.");
-      auto cas = std::make_unique<CAS>();
-
-      double xi, yi;
-      for (Eigen::Index i = 0; i < coords.rows(); i++)
-      {
-        Eigen::Vector2d coord = coords.row(i);
-        xi = coord(0);
-        yi = coord(1);
-        cas->add(Coordinate(xi, yi));
-      }
-      return cas;
-    }
-    std::unique_ptr<CAS> coord_sequence_from_array(STLCoords coords)
-    {
-      Error(coords.size() == 0, "Coordinate sequence is empty.");
-      auto cas = std::make_unique<CAS>();
-
-      double xi, yi;
-      for (std::pair<double, double> coord : coords)
-      {
-        xi = std::get<0>(coord);
-        yi = std::get<1>(coord);
-        cas->add(Coordinate(xi, yi));
-      }
-
-      return cas;
-    }
-    std::unique_ptr<CAS> coord_sequence_from_array(std::vector<Coordinate> coords)
-    {
-      Error(coords.size() == 0, "Coordinate sequence is empty.");
-
-      auto cas = std::make_unique<CAS>();
-
-      for (Coordinate coord : coords)
-      {
-        cas->add(coord);
-      }
-
-      return cas;
-    }
 
     std::unique_ptr<LineString> create_linestring(std::unique_ptr<CAS> cl)
     {

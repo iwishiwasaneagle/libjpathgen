@@ -38,14 +38,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             git build-essential cmake lcov \
-            libeigen3-dev pybind11-dev
+            libeigen3-dev
 
       - name: Install libgeos
         run: |
           sudo apt-get install -y software-properties-common
           sudo apt-add-repository -y ppa:ubuntugis/ubuntugis-unstable
           sudo apt-get update      
-          sudo apt-get install -y libgeos++-dev libgeos-dev ${{ matrix.libgeos }}
+          sudo apt-get install -y libgeos++-dev libgeos-dev libgeos${{ matrix.libgeos }}
 
       - name: Install Catch2
         run: |
@@ -53,10 +53,6 @@ jobs:
           cd Catch2
           cmake -Bbuild -H. -DBUILD_TESTING=OFF 
           sudo cmake --build build/ --target install -j $(nproc)
-
-      - name: Install python deps
-        run: |
-          pip install "pybind11[global]>=2.11.0" ".[test]"
 
       - name: Build C++
         run: |
@@ -67,9 +63,17 @@ jobs:
             -DCMAKE_BUILD_TYPE=Release
           cmake --build build -j $(nproc) --config Release
 
-      - name: Run tests
+      - name: Run C++ tests
         run: |
           ctest --output-on-failure --test-dir build -C Release
+
+      - name: Install python deps
+        run: |
+          pip install "pybind11[global]>=2.11.0" # Install separately as otherwise pybind11 is not found by cmake
+          CMAKE_PREFIX_PATH="$(pybind11-config --cmakedir);$CMAKE_PREFIX_PATH" pip install ".[test]"
+
+      - name: Run python tests
+        run: |
           python -m pytest test/python
 
       - name: Prepare files for codecov
@@ -84,4 +88,3 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.xml,./coverage.info
           fail_ci_if_error: true
-
