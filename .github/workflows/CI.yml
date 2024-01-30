@@ -69,7 +69,8 @@ jobs:
 
       - name: Install python deps
         run: |
-          pip install "pybind11[global]>=2.11.0" ".[test]"
+          pip install "pybind11[global]>=2.11.0" # Install separately as otherwise pybind11 is not found by cmake
+          CMAKE_PREFIX_PATH="$(pybind11-config --cmakedir);$CMAKE_PREFIX_PATH" pip install ".[test]"
 
       - name: Run python tests
         run: |
