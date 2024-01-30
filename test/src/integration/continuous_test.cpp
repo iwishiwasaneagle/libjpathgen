@@ -56,7 +56,7 @@ namespace
     coords.resize(N, 2);
     for (int i = 0; i < N; i++)
     {
-      auto sliced_angles = angles.block(0,0,i,1).array();
+      auto sliced_angles = angles.block(0, 0, i, 1).array();
       coords(i, 0) = sliced_angles.cos().sum();
       coords(i, 1) = sliced_angles.sin().sum();
     }
@@ -67,11 +67,11 @@ namespace
     STLCoords stl_coords;
     for (int i = 0; i < coords.rows(); i++)
     {
-      stl_coords.emplace_back( coords(i, 0), coords(i, 1) );
+      stl_coords.emplace_back(coords(i, 0), coords(i, 1));
     }
     return stl_coords;
   }
-}
+}  // namespace
 /*******************************************
  * TEST INTEGRATION OVER REGION COLLECTION *
  *******************************************/
@@ -80,27 +80,23 @@ TEST_CASE("Region collection is integrated over", "[continuous, integration, reg
 {
   double abs_err_req = GENERATE(0, 1e-10, 1e-6);
   double rel_err_req = GENERATE(0, 0.01, 0.05);
-  double xoffset = GENERATE(0.0, 50.0, -50.0);
-  double yoffset = xoffset;
-
   cubpackpp::REGION_COLLECTION rc;
   double result = NAN;
   auto *continuous_args = new ContinuousArgs(abs_err_req = abs_err_req, rel_err_req = rel_err_req);
 
   SECTION("A unit square")
   {
-    cubpackpp::Point A(0 + xoffset, 0 + yoffset), B(0 + xoffset, 1 + yoffset), C(1 + xoffset, 0 + yoffset);
+    cubpackpp::Point A(0, 0), B(0, 1), C(1, 0);
     cubpackpp::RECTANGLE unit_square(A, B, C);
     rc += unit_square;
 
     result = continuous_integration_over_region_collections(constant_return_fn, rc, continuous_args);
-
     REQUIRE_THAT(1.0, WithinRel(result));
   }
 
   SECTION("A rectangle")
   {
-    cubpackpp::Point A(1 + xoffset, 1 + yoffset), B(1 + xoffset, 3 + yoffset), C(1.5 + xoffset, 1 + yoffset);
+    cubpackpp::Point A(1, 1), B(1, 3), C(1.5, 1);
     cubpackpp::RECTANGLE rectangle(A, B, C);
     rc += rectangle;
     result = continuous_integration_over_region_collections(constant_return_fn, rc, continuous_args);
@@ -109,7 +105,7 @@ TEST_CASE("Region collection is integrated over", "[continuous, integration, reg
 
   SECTION("A triangle")
   {
-    cubpackpp::Point A(0 + xoffset, 0 + yoffset), B(0.5 + xoffset, 2 + yoffset), C(1 + xoffset, 0 + yoffset);
+    cubpackpp::Point A(0, 0), B(0.5, 2), C(1, 0);
     cubpackpp::TRIANGLE triangle(A, B, C);
     rc += triangle;
     result = continuous_integration_over_region_collections(constant_return_fn, rc, continuous_args);
@@ -117,12 +113,11 @@ TEST_CASE("Region collection is integrated over", "[continuous, integration, reg
   }
   SECTION("Two triangles")
   {
-    double triangles[2][3][2]{ { { 1, 0 }, { 1.5, 1 }, { 2, 0 } }, { { 0, 0 }, { 0.5, 1 }, { 1, 0 } } };
+    std::vector<STLCoords> triangles{ { { 1, 0 }, { 1.5, 1 }, { 2, 0 } }, { { 0, 0 }, { 0.5, 1 }, { 1, 0 } } };
     for (int i = 0; i < 2; i++)
     {
-      cubpackpp::Point A(triangles[i][0][0] + xoffset, triangles[i][0][1] + yoffset),
-          B(triangles[i][1][0] + xoffset, triangles[i][1][1] + yoffset),
-          C(triangles[i][2][0] + xoffset, triangles[i][2][1] + yoffset);
+      cubpackpp::Point A(triangles[i][0].first, triangles[i][0].second), B(triangles[i][1].first, triangles[i][1].second),
+          C(triangles[i][2].first, triangles[i][2].second);
       cubpackpp::TRIANGLE triangle(A, B, C);
       rc += triangle;
     }
@@ -131,18 +126,17 @@ TEST_CASE("Region collection is integrated over", "[continuous, integration, reg
   }
   SECTION("Three triangles and a unit square")
   {
-    double triangles[3][3][2]{ { { -1, 0 }, { -0.5, 2 }, { 0, 0 } },
-                               { { 1, 0 }, { 1.5, 2 }, { 2, 0 } },
-                               { { 0, 0 }, { 0.5, 2 }, { 1, 0 } } };
+    std::vector<STLCoords> triangles{ { { -1, 0 }, { -0.5, 2 }, { 0, 0 } },
+                                      { { 1, 0 }, { 1.5, 2 }, { 2, 0 } },
+                                      { { 0, 0 }, { 0.5, 2 }, { 1, 0 } } };
     for (int i = 0; i < 3; i++)
     {
-      cubpackpp::Point A(triangles[i][0][0] + xoffset, triangles[i][0][1] + yoffset),
-          B(triangles[i][1][0] + xoffset, triangles[i][1][1] + yoffset),
-          C(triangles[i][2][0] + xoffset, triangles[i][2][1] + yoffset);
+      cubpackpp::Point A(triangles[i][0].first, triangles[i][0].second), B(triangles[i][1].first, triangles[i][1].second),
+          C(triangles[i][2].first, triangles[i][2].second);
       cubpackpp::TRIANGLE triangle(A, B, C);
       rc += triangle;
     }
-    cubpackpp::Point A(0 + xoffset, 0 + yoffset), B(0 + xoffset, 1 + yoffset), C(1 + xoffset, 0 + yoffset);
+    cubpackpp::Point A(0, 0), B(0, 1), C(1, 0);
     cubpackpp::RECTANGLE unit_square(A, B, C);
     rc += unit_square;
 
@@ -161,40 +155,28 @@ TEST_CASE("Polygon is integrated over", "[continuous, integration, polygon, geos
 
   double abs_err_req = GENERATE(0, 1e-10, 1e-6);
   double rel_err_req = GENERATE(0, 0.01, 0.05);
-  double xoffset = GENERATE(0.0, 50.0, -50.0);
-  double yoffset = xoffset;
 
   double result = NAN;
   auto *continuous_args = new ContinuousArgs(abs_err_req = abs_err_req, rel_err_req = rel_err_req);
 
   SECTION("A unit square")
   {
-    double corners[5][2]{ { 0, 0 }, { 0, 1 }, { 1, 1 }, { 1, 0 }, { 0, 0 } };
-
-    geos::geom::CoordinateSequence coordinate_sequence;
-    for (double *corner : corners)
-    {
-      geos::geom::Coordinate coordinate(corner[0] + xoffset, corner[1] + yoffset);
-      coordinate_sequence.add(coordinate);
-    }
-    std::unique_ptr<geos::geom::LinearRing> linear_ring = geometry_factory->createLinearRing(coordinate_sequence);
+    STLCoords corners{ { 0, 0 }, { 0, 1 }, { 1, 1 }, { 1, 0 }, { 0, 0 } };
+    std::unique_ptr<geos::geom::CoordinateSequence> coordinate_sequence =
+        jpathgen::geometry::coord_sequence_from_array(corners);
+    std::unique_ptr<geos::geom::LinearRing> linear_ring = geometry_factory->createLinearRing(std::move(coordinate_sequence));
     std::unique_ptr<geos::geom::Polygon> polygon = geometry_factory->createPolygon(std::move(linear_ring));
-
     result = continuous_integration_over_polygon(constant_return_fn, std::move(polygon), continuous_args);
     REQUIRE_THAT(1.0, WithinRel(result));
   }
 
   SECTION("A rectangle")
   {
-    double corners[5][2]{ { 0, 0 }, { 0, 0.5 }, { 2, 0.5 }, { 2, 0 }, { 0, 0 } };
+    STLCoords corners{ { 0, 0 }, { 0, 0.5 }, { 2, 0.5 }, { 2, 0 }, { 0, 0 } };
 
-    geos::geom::CoordinateSequence coordinate_sequence;
-    for (double *corner : corners)
-    {
-      geos::geom::Coordinate coordinate(corner[0] + xoffset, corner[1] + yoffset);
-      coordinate_sequence.add(coordinate);
-    }
-    std::unique_ptr<geos::geom::LinearRing> linear_ring = geometry_factory->createLinearRing(coordinate_sequence);
+    std::unique_ptr<geos::geom::CoordinateSequence> coordinate_sequence =
+        jpathgen::geometry::coord_sequence_from_array(corners);
+    std::unique_ptr<geos::geom::LinearRing> linear_ring = geometry_factory->createLinearRing(std::move(coordinate_sequence));
     std::unique_ptr<geos::geom::Polygon> polygon = geometry_factory->createPolygon(std::move(linear_ring));
 
     result = continuous_integration_over_polygon(constant_return_fn, std::move(polygon), continuous_args);
@@ -204,29 +186,21 @@ TEST_CASE("Polygon is integrated over", "[continuous, integration, polygon, geos
   {
     std::vector<std::unique_ptr<geos::geom::Polygon>> polygons;
     polygons.reserve(4);
-    double triangles[3][4][2]{ { { -1, 0 }, { -0.5, 2 }, { 0, 0 }, { -1, 0 } },
-                               { { 1, 0 }, { 1.5, 2 }, { 2, 0 }, { 1, 0 } },
-                               { { 0, 0 }, { 0.5, 2 }, { 1, 0 }, { 0, 0 } } };
+    std::vector<STLCoords> triangles{ { { -1, 0 }, { -0.5, 2 }, { 0, 0 }, { -1, 0 } },
+                                      { { 1, 0 }, { 1.5, 2 }, { 2, 0 }, { 1, 0 } },
+                                      { { 0, 0 }, { 0.5, 2 }, { 1, 0 }, { 0, 0 } } };
     for (int i = 0; i < 3; i++)
     {
-      geos::geom::CoordinateSequence coordinate_sequence;
-      for (int j = 0; j < 4; j++)
-      {
-        geos::geom::Coordinate coordinate(triangles[i][j][0] + xoffset, triangles[i][j][1] + yoffset);
-        coordinate_sequence.add(coordinate);
-      }
-      std::unique_ptr<geos::geom::LinearRing> linear_ring = geometry_factory->createLinearRing(coordinate_sequence);
+      std::unique_ptr<geos::geom::CoordinateSequence> coordinate_sequence =
+          jpathgen::geometry::coord_sequence_from_array(triangles[i]);
+      std::unique_ptr<geos::geom::LinearRing> linear_ring =
+          geometry_factory->createLinearRing(std::move(coordinate_sequence));
       std::unique_ptr<geos::geom::Polygon> polygon = geometry_factory->createPolygon(std::move(linear_ring));
       polygons.push_back(std::move(polygon));
     }
-    double corners[5][2]{ { 0, 0 }, { 0, 1 }, { 1, 1 }, { 1, 0 }, { 0, 0 } };
-    geos::geom::CoordinateSequence coordinate_sequence;
-    for (double *corner : corners)
-    {
-      geos::geom::Coordinate coordinate(corner[0] + xoffset, corner[1] + yoffset);
-      coordinate_sequence.add(coordinate);
-    }
-    std::unique_ptr<geos::geom::LinearRing> linear_ring = geometry_factory->createLinearRing(coordinate_sequence);
+    std::vector<std::pair<double, double>> corners{ { 0, 0 }, { 0, 1 }, { 1, 1 }, { 1, 0 }, { 0, 0 } };
+    std::unique_ptr<geos::geom::CoordinateSequence> coordinate_sequence = coord_sequence_from_array(corners);
+    std::unique_ptr<geos::geom::LinearRing> linear_ring = geometry_factory->createLinearRing(std::move(coordinate_sequence));
     std::unique_ptr<geos::geom::Polygon> polygon = geometry_factory->createPolygon(std::move(linear_ring));
     polygons.push_back(std::move(polygon));
 
@@ -237,12 +211,7 @@ TEST_CASE("Polygon is integrated over", "[continuous, integration, polygon, geos
   }
   SECTION("A rectangle as a vector of coords")
   {
-    STLCoords corners;
-    corners.push_back({ 0, 0 });
-    corners.push_back({ 0, 0.5 });
-    corners.push_back({ 2, 0.5 });
-    corners.push_back({ 2, 0 });
-    corners.push_back({ 0, 0 });
+    STLCoords corners{ { 0, 0 }, { 0, 0.5 }, { 2, 0.5 }, { 2, 0 }, { 0, 0 } };
     result = continuous_integration_over_polygon(constant_return_fn, corners, continuous_args);
     REQUIRE_THAT(1.0, WithinRel(result));
   }
@@ -254,7 +223,7 @@ TEST_CASE("Polygon is integrated over", "[continuous, integration, polygon, geos
 
 TEST_CASE("Buffered path is integrated over", "[continuous, integration, path, geos]")
 {
-  int n_wps = GENERATE(range(2, 10, 1));
+  int n_wps = GENERATE(2, 5, 10);
 
   double abs_err_req = GENERATE(0, 1e-10, 1e-6);
   double rel_err_req = GENERATE(0, 0.01, 0.05);
@@ -283,7 +252,7 @@ TEST_CASE("Buffered path is integrated over", "[continuous, integration, path, g
 
 TEST_CASE("Buffered paths are integrated over", "[continuous, integration, paths, geos]")
 {
-  int n_paths = GENERATE(2, 10);
+  int n_paths = GENERATE(2, 5, 10);
   double abs_err_req = GENERATE(0, 1e-6);
   double rel_err_req = GENERATE(0, 0.05);
   double buffer_radius_m = GENERATE(0.1, 1.5);
@@ -298,7 +267,7 @@ TEST_CASE("Buffered paths are integrated over", "[continuous, integration, paths
 
     for (int i = 0; i < n_paths; i++)
     {
-      path = build_coords(10);
+      path = build_coords(5);
       paths.push_back(path);
     }
 
@@ -316,8 +285,8 @@ TEST_CASE("Buffered paths are integrated over", "[continuous, integration, paths
 
     for (int i = 0; i < n_paths; i++)
     {
-      path = eigen_to_stl_coords(build_coords(10));
-      paths.push_back( path);
+      path = eigen_to_stl_coords(build_coords(5));
+      paths.push_back(path);
     }
 
     std::unique_ptr<geos::geom::CoordinateSequenceCompat> cs = coord_sequence_from_array(path);

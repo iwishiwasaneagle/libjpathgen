@@ -22,9 +22,10 @@ namespace jpathgen
   {
     class Args
     {
-    protected:
+     protected:
       const double _buffer_radius_m;
-    public:
+
+     public:
       [[nodiscard]] double get_buffer_radius_m() const
       {
         return _buffer_radius_m;
@@ -34,7 +35,7 @@ namespace jpathgen
 
     class ContinuousArgs : public Args
     {
-    protected:
+     protected:
       const double _abs_err_req;
       const double _rel_err_req;
 
@@ -93,6 +94,14 @@ namespace jpathgen
             _maxx(maxx),
             _miny(miny),
             _maxy(maxy){};
+      explicit DiscreteArgs(double buffer_radius_m, int N, int M,geos::geom::Envelope envelope, double poffset=0.05)
+          : Args(buffer_radius_m),
+            _N(N),
+            _M(M),
+            _minx(envelope.getMinX()*(1-poffset)),
+            _maxx(envelope.getMaxX()*(1+poffset)),
+            _miny(envelope.getMinY()*(1-poffset)),
+            _maxy(envelope.getMaxY()*(1+poffset)){};
     };
 
     template<typename FUNC, typename COORDS>

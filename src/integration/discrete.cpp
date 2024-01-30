@@ -34,8 +34,9 @@ namespace jpathgen
         for (auto yi : Eigen::VectorXd::LinSpaced(args->get_M(), args->get_miny(), args->get_maxy()))
         {
           std::unique_ptr<geos::geom::Point> pt =
-              geos::geom::GeometryFactory::getDefaultInstance()->createPoint(geos::geom::Coordinate(xi, yi));
-          if (polygon->contains(std::move(pt).get()))
+              geos::geom::GeometryFactory::getDefaultInstance()->createPoint();
+          pt->setXY(xi,yi);
+          if (polygon->contains(pt.get()))
           {
             sum += f(xi, yi);
             count++;
