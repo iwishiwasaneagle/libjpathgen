@@ -227,12 +227,12 @@ TEST_CASE("Buffered path is continuously integrated over", "[continuous, integra
 
   double abs_err_req = GENERATE(0, 1e-10, 1e-6);
   double rel_err_req = GENERATE(0, 0.01, 0.05);
-  double buffer_radius_m = GENERATE(1.0, 2.5, 5.);
+  int buffer_radius_m = GENERATE(1, 2, 5);
 
   double result = NAN;
   auto *continuous_args = new ContinuousArgs(buffer_radius_m, abs_err_req, rel_err_req);
 
-  DYNAMIC_SECTION("A " << n_wps << "-waypoint path")
+  DYNAMIC_SECTION("A " << n_wps << "-waypoint path with a buffer radius of " << buffer_radius_m << "m")
   {
     EigenCoords path = Eigen::Matrix<double, -1, 2>::Random(n_wps, 2);
 

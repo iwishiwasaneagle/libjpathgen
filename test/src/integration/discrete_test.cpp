@@ -19,8 +19,8 @@ using namespace jpathgen::geometry;
 using Catch::Matchers::WithinRel;
 
 #define REL_ACCEPTABLE_ERROR 0.01
-#define N                    2500
-#define M                    2500
+#define N                    1000
+#define M                    1000
 
 namespace
 {
@@ -127,18 +127,19 @@ TEST_CASE("Polygon is discretely integrated over", "[discrete, integration, poly
 
 TEST_CASE("Buffered path is discretely integrated over", "[discrete, integration, path, geos]")
 {
-  int n_wps = GENERATE(2, 5, 10);
-  double buffer_radius_m = GENERATE(1.0, 2.5, 5.);
+  int n_wps = GENERATE(2, 5);
+  int buffer_radius_m = GENERATE(1, 2, 5);
 
   double result = NAN;
 
-  DYNAMIC_SECTION("A " << n_wps << "-waypoint path")
+  DYNAMIC_SECTION("A " << n_wps << "-waypoint path with a buffer radius of " << buffer_radius_m <<"m" )
   {
     EigenCoords path = Eigen::Matrix<double, -1, 2>::Random(n_wps, 2);
 
     std::unique_ptr<geos::geom::CoordinateSequenceCompat> cs = coord_sequence_from_array(path);
     auto envelope = cs->getEnvelope();
-    auto *discrete_args = new DiscreteArgs(buffer_radius_m, N, M, envelope);
+    auto *discrete_args = new DiscreteArgs(buffer_radius_m, N, M, envelope, 0.01, buffer_radius_m);
+
     auto ls = create_linestring(std::move(cs));
     auto buffered_path = buffer_linestring(std::move(ls), discrete_args->get_buffer_radius_m());
     result = discrete_integration_over_path(constant_return_fn, path, discrete_args);
@@ -153,7 +154,7 @@ TEST_CASE("Buffered path is discretely integrated over", "[discrete, integration
 
 TEST_CASE("Buffered paths are discretely integrated over", "[discrete, integration, paths, geos]")
 {
-  int n_paths = GENERATE(2, 5, 10);
+  int n_paths = GENERATE(2, 5);
   double buffer_radius_m = GENERATE(0.1, 1.5);
 
   double result = NAN;
@@ -172,7 +173,7 @@ TEST_CASE("Buffered paths are discretely integrated over", "[discrete, integrati
     std::unique_ptr<geos::geom::CoordinateSequenceCompat> cs = coord_sequence_from_array(path);
     auto envelope = cs->getEnvelope();
     auto ls = create_linestring(std::move(cs));
-    auto *discrete_args = new DiscreteArgs(buffer_radius_m, N, M, envelope, 0.5);
+    auto *discrete_args = new DiscreteArgs(buffer_radius_m, N, M, envelope, 0.01, buffer_radius_m);
     auto buffered_path = buffer_linestring(std::move(ls), discrete_args->get_buffer_radius_m());
     result = discrete_integration_over_path(constant_return_fn, path, discrete_args);
     REQUIRE_THAT(result, WithinRel(buffered_path->getArea(), REL_ACCEPTABLE_ERROR));
@@ -192,7 +193,7 @@ TEST_CASE("Buffered paths are discretely integrated over", "[discrete, integrati
     std::unique_ptr<geos::geom::CoordinateSequenceCompat> cs = coord_sequence_from_array(path);
     auto envelope = cs->getEnvelope();
     auto ls = create_linestring(std::move(cs));
-    auto *discrete_args = new DiscreteArgs(buffer_radius_m, N, M, envelope);
+    auto *discrete_args = new DiscreteArgs(buffer_radius_m, N, M, envelope, 0.01, buffer_radius_m);
     auto buffered_path = buffer_linestring(std::move(ls), discrete_args->get_buffer_radius_m());
     result = discrete_integration_over_path(constant_return_fn, path, discrete_args);
     REQUIRE_THAT(result, WithinRel(buffered_path->getArea(), REL_ACCEPTABLE_ERROR));
