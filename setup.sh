@@ -8,6 +8,7 @@ set -eux
 
 SRC_DIR="$(pwd)"
 
+INSTALL_LIBJPATHGEN=""
 install_libjpathgen(){
   # LIBJPATHGEN
   cd $SRC_DIR
