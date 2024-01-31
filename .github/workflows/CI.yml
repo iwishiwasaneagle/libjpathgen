@@ -37,7 +37,7 @@ jobs:
             git build-essential cmake lcov
 
       - name: Install C++ dependencies
-        run: bash setup.sh --cubpackpp --geos --eigen3
+        run: sudo bash setup.sh --cubpackpp --geos --eigen3
 
       - name: Install Catch2
         run: |
