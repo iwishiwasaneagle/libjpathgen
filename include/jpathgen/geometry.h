@@ -14,11 +14,8 @@
 #include <geos/geom/Geometry.h>
 #include <geos/geom/GeometryFactory.h>
 #include <geos/geom/LineString.h>
-#include <geos/geom/MultiPolygon.h>
-#include <geos/geom/Polygon.h>
-#include <triangulate/tri/Tri.h>
 
-#include <Eigen/Core>
+#include <eigen3/Eigen/Core>
 
 namespace jpathgen
 {
@@ -28,7 +25,7 @@ namespace jpathgen
 
     typedef Eigen::Matrix<double, Eigen::Dynamic, 2> EigenCoords;
     typedef std::vector<std::pair<double,double>> STLCoords;
-    typedef std::vector<Coordinate> GeosCoords;
+    typedef std::vector<geos::geom::Coordinate> GeosCoords;
 
     extern geos::geom::GeometryFactory* _global_factory;
 
@@ -37,7 +34,7 @@ namespace jpathgen
 
     std::unique_ptr<geos::geom::LineString> create_linestring(std::unique_ptr<CAS> cl);
 
-    std::unique_ptr<Geometry> buffer_linestring(std::unique_ptr<geos::geom::LineString> ls, double d = 2.5);
+    std::unique_ptr<geos::geom::Geometry> buffer_linestring(std::unique_ptr<geos::geom::LineString> ls, double d = 2.5);
 
     template<typename GEOM>
     std::unique_ptr<geos::geom::Geometry> triangulate_polygon(std::unique_ptr<GEOM> poly);

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.22)
 project(
         "jpathgen"
         VERSION 0.1.0
@@ -8,9 +8,10 @@ if (PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
     message(FATAL_ERROR "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there.\n")
 endif ()
 include(GNUInstallDirs)
+include(cmake/SourcesAndHeaders.cmake)
 include(cmake/StandardSettings.cmake)
-include(cmake/StaticAnalyzers.cmake)
 include(cmake/Utils.cmake)
+include(cmake/Deps.cmake)
 add_clang_format_target()
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
@@ -18,41 +19,19 @@ endif ()
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 message(STATUS "Started CMake for ${PROJECT_NAME} v${PROJECT_VERSION}...\n")
 
-if (UNIX)
-    add_compile_options("$<$<CONFIG:DEBUG>:-D_DEBUG>")    #this will allow to use same _DEBUG macro available in both Linux as well as Windows - MSCV environment. Easy to put Debug specific code.
-endif (UNIX)
+# Set project strings
 string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWERCASE)
 string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_UPPERCASE)
-
-set(EXE_NAME ${PROJECT_NAME_UPPERCASE}_EXE)
 set(LIB_NAME ${PROJECT_NAME_LOWERCASE})
-message(STATUS ${LIB_NAME})
-set(PY_NAME _lib${PROJECT_NAME_LOWERCASE})
+set(PY_INSTALL_NAME lib${PROJECT_NAME_LOWERCASE})
+set(PY_NAME _core)
 
 
-find_package(Eigen3 CONFIG REQUIRED)
+set(ignoreMe "${SKBUILD}")
+if((NOT DEFINED SKBUILD) OR DEFINED DEV)
 
-find_package(GEOS 3.11.1 CONFIG REQUIRED)
-if (GEOS_VERSION LESS "3.12.0")
-    message(STATUS "Geos version is ${GEOS_VERSION}<3.12.0 and therefore enabling compatibility mode.")
-    add_compile_definitions(GEOS_COMPATIBILITY_REQUIRED)
-endif ()
-
-set(CMAKE_SKIP_BUILD_RPATH FALSE)
-# when building, don't use the install RPATH already
-# (but later on when installing)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
-# add the automatically determined parts of the RPATH
-# which point to directories outside the build tree to the install RPATH
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
-add_subdirectory(extern/cubpackpp)
-
-# Find all headers and implementation files
-if (1)
-    include(cmake/SourcesAndHeaders.cmake)
-    add_library(${LIB_NAME} SHARED ${sources} ${headers} ${templates})
+    # CORE LIBRARY
+    add_library(${LIB_NAME} SHARED ${sources} ${headers})
     target_include_directories(
             ${LIB_NAME}
             PUBLIC
@@ -64,9 +43,9 @@ if (1)
     target_link_libraries(
             ${LIB_NAME}
             PUBLIC
-            Eigen3::Eigen
             GEOS::geos
             cubpackpp::cubpackpp
+            Eigen3::Eigen
     )
     if (${PROJECT_NAME_UPPERCASE}_ENABLE_VECTORIZATION)
         message(WARNING "Vectorization is in experimental mode and may cause unknown issues")
@@ -111,11 +90,8 @@ if (1)
             DESTINATION
             include
     )
-endif ()
 
-set(${LIB_NAME}_CMAKE_PACKAGE_INSTALL_SUBDIR "share/${LIB_NAME}/cmake")
-
-if (1)
+    set(${LIB_NAME}_CMAKE_PACKAGE_INSTALL_SUBDIR "share/${LIB_NAME}/cmake")
     include(CMakePackageConfigHelpers)
     write_basic_package_version_file(
             ${LIB_NAME}ConfigVersion.cmake
@@ -137,43 +113,17 @@ if (1)
             DESTINATION
             ${CMAKE_INSTALL_LIBDIR}/cmake/${LIB_NAME}
     )
-endif ()
+endif()
+if(DEFINED SKBUILD OR DEFINED DEV)
+    # PYTHON BINDINGS
 
-if (${${PROJECT_NAME_UPPERCASE}_BUILD_EXECUTABLE})
-    add_executable(${EXE_NAME} ${exe_sources})
-    find_package(CLI11 CONFIG REQUIRED)
-    target_link_libraries(
-            ${EXE_NAME}
-            PRIVATE
-            CLI11::CLI11
-            ${LIB_NAME}
-    )
-    target_include_directories(
-            ${EXE_NAME}
-            PUBLIC
-            $<INSTALL_INTERFACE:include>
-            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-            PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/src
-    )
-    add_executable(${PROJECT_NAME}::${EXE_NAME} ALIAS ${EXE_NAME})
-endif ()
-
-
-#
-# Install library for easy downstream inclusion
-#
-
-
-# We are using the SKBUILD variable, which is defined when scikit-build is
-# running the CMake build, to control building the Python wrapper. This allows
-# the C++ project to be installed, standalone, when using the standard CMake
-# build flow.
-if (DEFINED SKBUILD OR DEFINED DEV)
-    # prevent an unused variable warning
-    set(ignoreMe "${SKBUILD}")
-    set(PYBIND11_FINDPYTHON ON)
+    # We are using the SKBUILD variable, which is defined within pyproject.toml,
+    # running the CMake build, to control building the Python wrapper. This allows
+    # the C++ project to be installed, standalone, when using the standard CMake
+    # build flow.
+    find_package(Python REQUIRED COMPONENTS Interpreter Development.Module)
     find_package(pybind11 CONFIG REQUIRED)
+    find_package(${LIB_NAME} REQUIRED)
 
     # pybind11.readthedocs.io/en/stable/changelog.html
     if ((Python_VERSION GREATER_EQUAL "3.11") AND (pybind11_VERSION LESS 2.10.1))
@@ -187,32 +137,16 @@ if (DEFINED SKBUILD OR DEFINED DEV)
         )
     endif ()
 
-    pybind11_add_module(${PY_NAME} ${python_sources})
-
+    python_add_library(${PY_NAME} MODULE ${python_sources} WITH_SOABI)
     target_link_libraries(
             ${PY_NAME}
             PRIVATE
-            ${LIB_NAME}
+            pybind11::headers
+            Eigen3::Eigen
+            ${LIB_NAME}::${LIB_NAME}
     )
-
-    # Installing the extension module to the root of the package
-    install(TARGETS ${PY_NAME} DESTINATION .)
-
-    configure_file("${PROJECT_SOURCE_DIR}/src/lib${PROJECT_NAME_LOWERCASE}/__main__.py.in"
-            "${PROJECT_BINARY_DIR}/src/lib${PROJECT_NAME_LOWERCASE}/__main__.py")
-
-    install(FILES "${PROJECT_BINARY_DIR}/src/lib${PROJECT_NAME_LOWERCASE}/__main__.py" DESTINATION .)
-
-    if (APPLE)
-        set_target_properties(
-                ${PY_NAME} PROPERTIES INSTALL_RPATH "@loader_path/${CMAKE_INSTALL_LIBDIR}")
-    else ()
-        set_target_properties(${PY_NAME} PROPERTIES INSTALL_RPATH
-                "$ORIGIN/${CMAKE_INSTALL_LIBDIR}")
-    endif ()
-
+    install(TARGETS ${PY_NAME} DESTINATION ${PY_INSTALL_NAME})
 endif ()
-
 
 if (${PROJECT_NAME_UPPERCASE}_ENABLE_UNIT_TESTING)
     enable_testing()

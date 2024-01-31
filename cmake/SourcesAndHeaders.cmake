@@ -6,11 +6,6 @@ set(sources
         src/geometry/coord_sequence_from_array.cpp
         )
 
-set(exe_sources
-        src/main.cpp
-        ${sources}
-        )
-
 set(python_sources
         src/python.cpp
         )

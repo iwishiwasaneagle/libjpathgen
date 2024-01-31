@@ -1,19 +1,19 @@
 #  Copyright (c) 2024.  Jan-Hendrik Ewers
 #  SPDX-License-Identifier: GPL-3.0-only
 
-from ._libjpathgen import continuous_integration_over_path
-from ._libjpathgen import continuous_integration_over_paths
-from ._libjpathgen import continuous_integration_over_polygon
-from ._libjpathgen import continuous_integration_over_rectangle
-from ._libjpathgen import ContinuousArgs
+from ._core import continuous_integration_over_path
+from ._core import continuous_integration_over_paths
+from ._core import continuous_integration_over_polygon
+from ._core import continuous_integration_over_rectangle
+from ._core import ContinuousArgs
 
-from ._libjpathgen import discrete_integration_over_path
-from ._libjpathgen import discrete_integration_over_paths
-from ._libjpathgen import discrete_integration_over_polygon
-from ._libjpathgen import discrete_integration_over_rectangle
-from ._libjpathgen import DiscreteArgs
+from ._core import discrete_integration_over_path
+from ._core import discrete_integration_over_paths
+from ._core import discrete_integration_over_polygon
+from ._core import discrete_integration_over_rectangle
+from ._core import DiscreteArgs
 
-from ._libjpathgen import MultiModalBivariateGaussian
+from ._core import MultiModalBivariateGaussian
 
 __all__ = [
     "continuous_integration_over_path",

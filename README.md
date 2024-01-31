@@ -3,35 +3,37 @@
 [![CI](https://github.com/iwishiwasaneagle/libjpathgen/actions/workflows/CI.yml/badge.svg)](https://github.com/iwishiwasaneagle/libjpathgen/actions/workflows/CI.yml)
 [![codecov](https://codecov.io/gh/iwishiwasaneagle/libjpathgen/graph/badge.svg?token=8FT3BH2K4S)](https://codecov.io/gh/iwishiwasaneagle/libjpathgen)
 
-A python library written in C++ to aid in my research.
+A fast 2D cubeature library written in C++, with Python bindings.
+
+
 
 ## Installation
 
-```bash
-sudo apt-get install \
-      libeigen3-dev \
-      pybind11-dev \
-      libgeos++-dev \
-      libgeos-dev \
-      libgeos3.11.1
+If you're simply looking for python, run `pip install libjpathgen`.
 
+Else, to install the C++ library run
+
+```bash
 pip install git+https://github.com/iwishiwasaneagle/libjpathgen.git
+cd libjpathgen
+cmake \
+    -B build
+    -DCMAKE_BUILD_TYPE=Release \
+    ..
+cmake \
+    --build build \
+    --target install
 ```
 
-### Requirements
+### Dependencies
 
-For general use the below is sufficient.
+#### cubpackpp
 
-```bash
-sudo apt-get install \
-  libeigen3-dev \
-  libgeos++-dev \
-  libgeos-dev \
-  libgeos3.11.1 \ # libgeos3.12.0 for ubuntu:23.10
-  pybind11-dev
-```
+Ensure [`cubpackpp>=1.0.0`](https://github.com/iwishiwasaneagle/cubpackpp) is installed from source.
 
-For testing, `Catch2>=v3.4.0` is required (see [CI.yml](.github/workflows/CI.yml))
+#### Eigen3
+
+Please see the [official documentation](https://eigen.tuxfamily.org/dox/GettingStarted.html).
 
 #### libgeos
 
@@ -52,6 +54,8 @@ using pip (`pip install "pybind11[global]>=2.11.0"`).
 | 3.12   | 2.11.0                                                                     |
 
 ## Run tests
+
+ `Catch2>=v3.4.0` is required (see [CI.yml](.github/workflows/CI.yml))
 
 ```bash
 cmake -B build \

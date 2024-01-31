@@ -5,11 +5,13 @@
 #include <cubpackpp/cubpackpp.h>
 #include <geos/geom/Coordinate.h>
 #include <geos/operation/union/UnaryUnionOp.h>
+#include <geos/triangulate/tri/Tri.h>
 
 #include <functional>
 #include <utility>
 
 #include "jpathgen/environment.h"
+#include "jpathgen/function.h"
 #include "jpathgen/geometry.h"
 #include "jpathgen/geos_compat.h"
 #include "jpathgen/integration.h"
@@ -127,7 +129,8 @@ namespace jpathgen
       {
         std::unique_ptr<CoordinateSequenceCompat> cs = geometry::coord_sequence_from_array(coords);
         auto ls = geometry::create_linestring(std::move(cs));
-        std::unique_ptr<geos::geom::Geometry> buffered = geometry::buffer_linestring(std::move(ls), args->get_buffer_radius_m());
+        std::unique_ptr<geos::geom::Geometry> buffered =
+            geometry::buffer_linestring(std::move(ls), args->get_buffer_radius_m());
         union_buffered_paths = union_buffered_paths->Union(buffered.get());
       }
       return continuous_integration_over_polygon(f, std::move(union_buffered_paths), args);

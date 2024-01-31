@@ -8,13 +8,9 @@
 #include <cubpackpp/cubpackpp.h>
 #include <geos/geom/Polygon.h>
 
-#include <Eigen/Core>
 #include <memory>
 
-#include "jpathgen/environment.h"
-#include "jpathgen/function.h"
 #include "jpathgen/geometry.h"
-#include "jpathgen/geos_compat.h"
 
 namespace jpathgen
 {

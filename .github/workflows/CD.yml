@@ -1,0 +1,105 @@
+name: CD
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  setup:
+    name: Setup versions, changelogs, etc.
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Version
+        id: version
+        shell: bash
+        run: |
+          v=${GITHUB_REF##*/}
+          echo "Version: $v"
+          echo "::set-output name=version::$v"
+
+      - name: Check version
+        shell: bash
+        run: |
+          rx='^v([0-9]+\.){0,2}(\*|[0-9]+)$'
+          VERSION=${{steps.version.outputs.version}}
+          if [[ $VERSION =~ $rx ]]; then
+            echo "INFO:<-->Version $VERSION"
+          else
+            echo "ERROR:<->Unable to validate package version: '$VERSION'"
+            exit 1
+          fi
+
+  build-python:
+    name: Build python
+    needs: setup
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: true
+
+      - name: Build wheels
+        uses: pypa/cibuildwheel@v2.11.4
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: ./wheelhouse/*.whl
+
+  publish-pypi:
+    name: Publish on PyPi
+    if: ${{ !github.event.act }}
+    needs: build-python
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+    environment:
+      name: libjpathgen
+      url: https://pypi.org/p/libjpathgen
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: dist
+          path: dist
+
+      - name: Publish a Python distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish-github:
+    name: Publish on GitHub
+    if: ${{ !github.event.act }}
+    needs: build-python
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: dist
+
+      - name: Upload the release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+          file: dist/**
+          file_glob: true
+          release_name: "Release ${{needs.setup-envs.outputs.version}}"

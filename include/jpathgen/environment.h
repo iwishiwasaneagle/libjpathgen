@@ -5,7 +5,7 @@
 #ifndef JPATHGEN_ENVIRONMENT_H
 #define JPATHGEN_ENVIRONMENT_H
 
-#include <Eigen/Core>
+#include <eigen3/Eigen/Core>
 #include <functional>
 
 namespace jpathgen

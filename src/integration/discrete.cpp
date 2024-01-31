@@ -2,14 +2,14 @@
  * Copyright (c) 2024.  Jan-Hendrik Ewers
  * SPDX-License-Identifier: GPL-3.0-only
  */
-#include <cubpackpp/cubpackpp.h>
 #include <geos/geom/Coordinate.h>
 #include <geos/operation/union/UnaryUnionOp.h>
+#include <geos/triangulate/tri/Tri.h>
 
-#include <functional>
 #include <utility>
 
 #include "jpathgen/environment.h"
+#include "jpathgen/function.h"
 #include "jpathgen/geometry.h"
 #include "jpathgen/geos_compat.h"
 #include "jpathgen/integration.h"
