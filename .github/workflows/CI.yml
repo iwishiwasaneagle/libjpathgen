@@ -61,6 +61,7 @@ jobs:
 
       - name: Install python deps
         run: |
+          sudo bash setup.sh --libjpathgen
           pip install "pybind11[global]>=2.11.0" # Install separately as otherwise pybind11 is not found by cmake
           CMAKE_PREFIX_PATH="$(pybind11-config --cmakedir);$CMAKE_PREFIX_PATH" pip install ".[test]"
 
