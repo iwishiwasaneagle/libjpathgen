@@ -6,7 +6,7 @@
 
 set -eux
 
-SRC_DIR="$(pwd)"
+SRC_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 INSTALL_LIBJPATHGEN=""
 install_libjpathgen(){
@@ -14,7 +14,7 @@ install_libjpathgen(){
   cd $SRC_DIR
   mkdir _build
   cd _build
-  cmake\
+  cmake \
     -DCMAKE_BUILD_TYPE=Release \
     ..
   make -j "$(nproc)"
