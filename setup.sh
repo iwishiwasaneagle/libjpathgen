@@ -9,62 +9,9 @@ set -eux
 SRC_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 INSTALL_LIBJPATHGEN=""
-install_libjpathgen(){
-  # LIBJPATHGEN
-  cd $SRC_DIR
-  mkdir _build
-  cd _build
-  cmake \
-    -DCMAKE_BUILD_TYPE=Release \
-    ..
-  make -j "$(nproc)"
-  make install
-}
-
-install_cubpackpp(){
-  # CUBPACKPP
-  cd $SRC_DIR
-  git clone https://github.com/iwishiwasaneagle/cubpackpp
-  cd cubpackpp
-  git checkout f03b50f
-  mkdir _build
-  cd _build
-  cmake \
-      -DCMAKE_BUILD_TYPE=Release \
-      ..
-  make -j "$(nproc)"
-  make install
-}
-
-install_geos(){
-  # GEOS
-  cd $SRC_DIR
-  curl -OL https://download.osgeo.org/geos/geos-3.12.1.tar.bz2
-  tar xvfj geos-3.12.1.tar.bz2
-  cd geos-3.12.1
-  mkdir _build
-  cd _build
-  cmake \
-      -DCMAKE_BUILD_TYPE=Release \
-      -DBUILD_DOCUMENTATION=OFF \
-      -DBUILD_TESTING=OFF \
-      ..
-  make -j "$(nproc)"
-  make install
-}
-
-install_eigen3(){
-  # EIGEN3
-  cd $SRC_DIR
-  curl -OL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz
-  tar -xzvf eigen-3.4.0.tar.gz
-  cd eigen-3.4.0
-  mkdir _build
-  cd _build
-  cmake ..
-  make install
-}
-
+INSTALL_CUBPACKPP=""
+INSTALL_GEOS=""
+INSTALL_EIGEN3=""
 for i in "$@"; do
   case $i in
     --libjpathgen)
@@ -72,22 +19,22 @@ for i in "$@"; do
       shift
       ;;
     --cubpackpp)
-      install_cubpackpp
+      INSTALL_CUBPACKPP=1
       shift
       ;;
     --eigen3)
-      install_eigen3
+      INSTALL_EIGEN3=1
       shift
       ;;
     --geos)
-      install_geos
+      INSTALL_GEOS=1
       shift
       ;;
     --all)
-      install_cubpackpp
-      install_eigen3
-      install_geos
-      install_libjpathgen
+      INSTALL_CUBPACKPP=1
+      INSTALL_EIGEN3=1
+      INSTALL_GEOS=1
+      INSTALL_LIBJPATHGEN=1
       ;;
     -*|--*)
       echo "Unknown option $i"
@@ -98,8 +45,62 @@ for i in "$@"; do
   esac
 done
 
-# Ensure libjpathgen is installed last
-if [ -z "$INSTALL_LIBJPATHGEN" ]
+if [ -n "$INSTALL_CUBPACKPP" ]
 then
-  install_libjpathgen
+  # CUBPACKPP
+  cd $SRC_DIR
+  git clone https://github.com/iwishiwasaneagle/cubpackpp
+  cd cubpackpp
+  git checkout f03b50f
+  mkdir -p _build
+  cd _build
+  cmake \
+      -DCMAKE_BUILD_TYPE=Release \
+      ..
+  make -j "$(nproc)"
+  make install
+fi
+
+if [ -n "$INSTALL_GEOS" ]
+then
+  # GEOS
+  cd $SRC_DIR
+  curl -OL https://download.osgeo.org/geos/geos-3.12.1.tar.bz2
+  tar xvfj geos-3.12.1.tar.bz2
+  cd geos-3.12.1
+  mkdir -p _build
+  cd _build
+  cmake \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DBUILD_DOCUMENTATION=OFF \
+      -DBUILD_TESTING=OFF \
+      ..
+  make -j "$(nproc)"
+  make install
+fi
+
+if [ -n "$INSTALL_EIGEN3" ]
+then
+  # EIGEN3
+  cd $SRC_DIR
+  curl -OL https://gitlab.com/libeigen/eigen/-/archive/3.4.0/eigen-3.4.0.tar.gz
+  tar -xzvf eigen-3.4.0.tar.gz
+  cd eigen-3.4.0
+  mkdir -p _build
+  cd _build
+  cmake ..
+  make install
+fi
+
+if [ -n "$INSTALL_LIBJPATHGEN" ]
+then
+  # LIBJPATHGEN
+  cd $SRC_DIR
+  mkdir -p _build
+  cd _build
+  cmake \
+    -DCMAKE_BUILD_TYPE=Release \
+    ..
+  make -j "$(nproc)"
+  make install
 fi
