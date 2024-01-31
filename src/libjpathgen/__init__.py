@@ -15,6 +15,8 @@ from ._core import DiscreteArgs
 
 from ._core import MultiModalBivariateGaussian
 
+from ._version import __version__
+
 __all__ = [
     "continuous_integration_over_path",
     "continuous_integration_over_paths",
@@ -26,5 +28,6 @@ __all__ = [
     "discrete_integration_over_polygon",
     "discrete_integration_over_rectangle",
     "DiscreteArgs",
-    "MultiModalBivariateGaussian"
+    "MultiModalBivariateGaussian",
+    "__version__"
 ]
