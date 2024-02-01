@@ -3,7 +3,7 @@
 import pytest
 import numpy as np
 from libjpathgen import MultiModalBivariateGaussian, continuous_integration_over_rectangle, \
-    discrete_integration_over_rectangle, ContinuousArgs, DiscreteArgs
+    discrete_integration_over_rectangle, ContinuousArgs, DiscreteArgs,discrete_integration_over_path,continuous_integration_over_path
 
 
 @pytest.fixture(params=[np.eye(2)])
@@ -80,3 +80,12 @@ def test_discrete_integration_over_rectangle(bounds, exp):
                                               DiscreteArgs(2.5, 1500, 1500, bounds[0] * 0.95, bounds[1] * 1.05,
                                                            bounds[2] * 0.95, bounds[3] * 1.05))
     assert np.isclose(act, exp, rtol=1e-1)
+
+def test_continuous_integration_over_path():
+    path = np.array([(0,0),(1,0)])
+    result = continuous_integration_over_path(lambda x,y:1, path, ContinuousArgs(1,0.05,0))
+    assert np.isclose(result , 5.136548490545939, rtol = 1e-1)
+def test_discrete_integration_over_path():
+    path = np.array([(0,0),(1,0)])
+    result = discrete_integration_over_path(lambda x,y:1, path, DiscreteArgs(1,100,100,-2,2,-1,2))
+    assert np.isclose(result , 5.136548490545939, rtol = 1e-1)
