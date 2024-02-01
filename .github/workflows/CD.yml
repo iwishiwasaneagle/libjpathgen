@@ -20,7 +20,6 @@ jobs:
         uses: pypa/cibuildwheel@v2.11.4
 
       - name: Upload artifact
-        if: ${{ !env.ACT }}
         uses: actions/upload-artifact@v3
         with:
           name: dist
@@ -28,7 +27,6 @@ jobs:
 
   publish-pypi:
     name: Publish on PyPi
-    if: ${{ !env.ACT }}
     needs: build-python
     runs-on: ubuntu-22.04
     permissions:
@@ -51,7 +49,6 @@ jobs:
 
   publish-github:
     name: Publish on GitHub
-    if: ${{ !env.ACT }}
     needs: build-python
     runs-on: ubuntu-22.04
     steps:
@@ -63,6 +60,14 @@ jobs:
         with:
           name: dist
           path: dist
+
+      - name: Changelog
+        uses: orhun/git-cliff-action@v2
+        id: changelog
+        with:
+          args: -vv --latest --strip header
+        env:
+          OUTPUT: CHANGELOG.md
 
       - name: Build strings
         id: strings
@@ -80,3 +85,4 @@ jobs:
           file: dist/**
           file_glob: true
           release_name: "Release ${{steps.strings.outputs.version}}"
+          body: ${{ steps.changelog.outputs.content }}
