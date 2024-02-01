@@ -37,7 +37,7 @@ requires = [
 build-backend = "scikit_build_core.build"
 
 [tool.scikit-build.cmake.define]
-SKBUILD = "ON"
+BUILD_PYTHON = "ON"
 
 [tool.scikit-build]
 cmake.build-type = "Release"
@@ -55,12 +55,9 @@ write_to = "src/libjpathgen/_version.py"
 
 
 [tool.cibuildwheel]
-skip = ["pp*"]  #  no pypy
 archs = ["auto"]
 before-all = "bash setup.sh --all"
 test-extras = ["test"]
 test-command ="pytest {project}/test/python"
 build-verbosity = 1
 manylinux-x86_64-image="manylinux_2_28"
-[tool.cibuildwheel.linux.environment]
-LD_LIBRARY_PATH='/usr/local/lib64;/usr/local/lib'
