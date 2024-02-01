@@ -75,7 +75,7 @@ def test_continuous_integration_over_rectangle(bounds, exp):
     [(1., 2., 0., 1.), 1.],
     [(100., 150., 50., 100.), 50. * 50.],
 ])
-def testdiscrete_integration_over_rectangle(bounds, exp):
+def test_discrete_integration_over_rectangle(bounds, exp):
     act = discrete_integration_over_rectangle(lambda x, y: 1, *bounds,
                                               DiscreteArgs(2.5, 1500, 1500, bounds[0] * 0.95, bounds[1] * 1.05,
                                                            bounds[2] * 0.95, bounds[3] * 1.05))
