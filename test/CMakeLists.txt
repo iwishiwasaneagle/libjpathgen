@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)
+cmake_minimum_required(VERSION 3.22)
 project(
   ${CMAKE_PROJECT_NAME}Tests
   LANGUAGES CXX
@@ -7,7 +7,7 @@ project(
 verbose_message("Adding tests under ${CMAKE_PROJECT_NAME}Tests...")
 
 find_package(Catch2 3 CONFIG REQUIRED)
-find_package(Eigen3 CONFIG REQUIRED)
+include(../cmake/Deps.cmake)
 include(CTest)
 include(Catch)
 
@@ -31,7 +31,9 @@ foreach(file ${test_sources})
     PRIVATE
           Catch2::Catch2WithMain
           Eigen3::Eigen
+          GEOS::geos
           ${${CMAKE_PROJECT_NAME}_TEST_LIB}
+          cubpackpp::cubpackpp
   )
   catch_discover_tests(${test_name}_Tests)
 endforeach()
@@ -47,7 +49,9 @@ if(1)
           PRIVATE
           Catch2::Catch2WithMain
           Eigen3::Eigen
+          GEOS::geos
           ${${CMAKE_PROJECT_NAME}_TEST_LIB}
+          cubpackpp::cubpackpp
   )
 
   catch_discover_tests(all_Tests)

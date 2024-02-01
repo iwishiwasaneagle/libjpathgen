@@ -24,7 +24,7 @@ namespace jpathgen
         Eigen::Vector2d coord = coords.row(i);
         xi = coord(0);
         yi = coord(1);
-        cas->add(Coordinate(xi, yi));
+        cas->add(geos::geom::Coordinate(xi, yi));
       }
       return cas;
     }
@@ -40,20 +40,20 @@ namespace jpathgen
       {
         xi = std::get<0>(coord);
         yi = std::get<1>(coord);
-        cas->add(Coordinate(xi, yi));
+        cas->add(geos::geom::Coordinate(xi, yi));
       }
 
       return cas;
     }
 
     template<>
-    std::unique_ptr<CAS> coord_sequence_from_array(std::vector<Coordinate> coords)
+    std::unique_ptr<CAS> coord_sequence_from_array(std::vector<geos::geom::Coordinate> coords)
     {
       Error(coords.size() == 0, "Coordinate sequence is empty.");
 
       auto cas = std::make_unique<CAS>();
 
-      for (Coordinate coord : coords)
+      for (geos::geom::Coordinate coord : coords)
       {
         cas->add(coord);
       }

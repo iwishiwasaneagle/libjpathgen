@@ -4,14 +4,15 @@
  */
 #include <jpathgen/function.h>
 #include <jpathgen/integration.h>
-#include <math.h>
 
-#include <Eigen/Core>
+#include <eigen3/Eigen/Core>
 #include <catch2/catch_template_test_macros.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/generators/catch_generators_range.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+
+#include "jpathgen/environment.h"
 
 using namespace jpathgen::integration;
 using namespace jpathgen::function;

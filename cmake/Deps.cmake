@@ -1,0 +1,7 @@
+find_package(Eigen3 CONFIG REQUIRED)
+find_package(GEOS 3.11.1 CONFIG REQUIRED)
+    if (GEOS_VERSION LESS "3.12.0")
+        message(STATUS "Geos version is ${GEOS_VERSION}<3.12.0 and therefore enabling compatibility mode.")
+        add_compile_definitions(GEOS_COMPATIBILITY_REQUIRED)
+    endif ()
+find_package(cubpackpp CONFIG REQUIRED)

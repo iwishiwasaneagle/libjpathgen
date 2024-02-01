@@ -1,29 +1,63 @@
-[build-system]
-requires = [
-    "scikit-build",
-    "setuptools>=46.1.0",
-    "setuptools_scm>=6.2",
-    "pybind11",
-    "cmake"
+[project]
+name = "libjpathgen"
+description = "A C++ library to speed up jpathgen computations"
+author = [
+    {name= "Jan-Hendrik Ewers", email="j.ewers.1@research.gla.ac.uk"}
+    ]
+dynamic = ["version"]
+license.file = "LICENSE.txt"
+readme = "README.md"
+requires-python = ">=3.10"
+platforms = "Linux"
+classifiers = [
+"Development Status :: 3 - Alpha",
+"Natural Language :: English",
+"Operating System :: Unix",
+"Topic :: Scientific/Engineering",
+"Topic :: Software Development :: Libraries :: Python Modules",
+"Topic :: Utilities",
+"Programming Language :: C++"
+]
+[project.urls]
+Homepage = "https://github.com/iwishiwasaneagle/libjpathgen"
+"Bug Tracker" = "https://github.com/iwishiwasaneagle/libjpathgen/issues"
+Discussions = "https://github.comiwishiwasaneagle/libjpathgen/discussions"
+[project.optional-dependencies]
+test = [
+    "pytest",
+    "numpy"
 ]
 
-build-backend = "setuptools.build_meta"
 
-[tool.setuptools_scm]
+[build-system]
+requires = [
+    "scikit-build-core",
+    "pybind11[global]>2.11.0",
+]
+build-backend = "scikit_build_core.build"
+
+[tool.scikit-build.cmake.define]
+BUILD_PYTHON = "ON"
 
 [tool.scikit-build]
-build_type = "Release"
+cmake.build-type = "Release"
+metadata.version.provider = "scikit_build_core.metadata.setuptools_scm"
+sdist.include = ["src/libjpathgen/_version.py"]
+
+[[tool.scikit-build.generate]]
+path = "libjpathgen/_version.py"
+template = '''
+version = "${version}"
+'''
+
+[tool.setuptools_scm]
+write_to = "src/libjpathgen/_version.py"
+
 
 [tool.cibuildwheel]
-skip = ["pp*"]  #  no pypy
-archs = ["auto64"] # only 64bit
-
-before-all = "apt update && apt-get install -y libeigen3-dev"
-
-manylinux-x86_64-image="manylinux_2_24"
-manylinux-i686-image="manylinux_2_24"
-
-[[tool.cibuildwheel.overrides]]
-select = "*-musllinux*"
-before-all = "apk add py3-pybind11-dev eigen-dev"
-environment = "Eigen3_DIR=/usr/share/cmake/Modules" # https://gitlab.alpinelinux.org/alpine/aports/-/issues/11233
+archs = ["auto"]
+before-all = "bash setup.sh --all"
+test-extras = ["test"]
+test-command ="pytest {project}/test/python"
+build-verbosity = 1
+manylinux-x86_64-image="manylinux_2_28"

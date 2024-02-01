@@ -2,14 +2,14 @@
  * Copyright (c) 2024.  Jan-Hendrik Ewers
  * SPDX-License-Identifier: GPL-3.0-only
  */
-#include <pybind11/functional.h>
-#include <pybind11/operators.h>
 
-#include "jpathgen/environment.h"
-#include "jpathgen/integration.h"
-#include "pybind11/eigen.h"
-#include "pybind11/pybind11.h"
-#include "pybind11/stl.h"
+#include <jpathgen/environment.h>
+#include <jpathgen/function.h>
+#include <jpathgen/integration.h>
+#include <pybind11/eigen.h>
+#include <pybind11/functional.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 
 namespace py = pybind11;
 using namespace jpathgen::integration;
@@ -17,7 +17,7 @@ using namespace jpathgen::function;
 using namespace jpathgen::environment;
 using namespace jpathgen::geometry;
 
-PYBIND11_MODULE(_libjpathgen, m)
+PYBIND11_MODULE(_core, m)
 {
   m.doc() = "A C++ library to speed up jpathgen computations";
 
@@ -118,10 +118,12 @@ PYBIND11_MODULE(_libjpathgen, m)
       static_cast<double (*)(Function, std::vector<EigenCoords>, ContinuousArgs*)>(&continuous_integration_over_paths));
   m.def(
       "continuous_integration_over_paths",
-      static_cast<double (*)(MultiModalBivariateGaussian, std::vector<STLCoords>, ContinuousArgs*)>(&continuous_integration_over_paths));
+      static_cast<double (*)(MultiModalBivariateGaussian, std::vector<STLCoords>, ContinuousArgs*)>(
+          &continuous_integration_over_paths));
   m.def(
       "continuous_integration_over_paths",
-      static_cast<double (*)(MultiModalBivariateGaussian, std::vector<EigenCoords>, ContinuousArgs*)>(&continuous_integration_over_paths));
+      static_cast<double (*)(MultiModalBivariateGaussian, std::vector<EigenCoords>, ContinuousArgs*)>(
+          &continuous_integration_over_paths));
   m.def(
       "discrete_integration_over_paths",
       static_cast<double (*)(Function, std::vector<STLCoords>, DiscreteArgs*)>(&discrete_integration_over_paths));
@@ -130,8 +132,10 @@ PYBIND11_MODULE(_libjpathgen, m)
       static_cast<double (*)(Function, std::vector<EigenCoords>, DiscreteArgs*)>(&discrete_integration_over_paths));
   m.def(
       "discrete_integration_over_paths",
-      static_cast<double (*)(MultiModalBivariateGaussian, std::vector<STLCoords>, DiscreteArgs*)>(&discrete_integration_over_paths));
+      static_cast<double (*)(MultiModalBivariateGaussian, std::vector<STLCoords>, DiscreteArgs*)>(
+          &discrete_integration_over_paths));
   m.def(
       "discrete_integration_over_paths",
-      static_cast<double (*)(MultiModalBivariateGaussian, std::vector<EigenCoords>, DiscreteArgs*)>(&discrete_integration_over_paths));
+      static_cast<double (*)(MultiModalBivariateGaussian, std::vector<EigenCoords>, DiscreteArgs*)>(
+          &discrete_integration_over_paths));
 }

@@ -1,9 +1,0 @@
-include pyproject.toml requirements.txt setup.cfg setup.py LICENSE.txt README.md CMakeLists.txt
-recursive-include src/ *.cpp
-recursive-include include/jpathgen *.h
-
-exclude MANIFEST.in
-
-recursive-include extern/ *.cpp *.h *.tpp
-include extern/cubpackpp/cmake/*
-include extern/cubpackpp/CMakeLists.txt

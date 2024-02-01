@@ -4,7 +4,6 @@
  */
 #ifndef JPATHGEN_ERROR_H
 #define JPATHGEN_ERROR_H
-#include <iostream>
 
 namespace jpathgen
 {
