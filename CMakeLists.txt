@@ -164,4 +164,9 @@ if (${PROJECT_NAME_UPPERCASE}_ENABLE_FUZZING)
     add_subdirectory(test/fuzzing)
 endif ()
 
+if (${PROJECT_NAME_UPPERCASE}_ENABLE_BENCHMARKS)
+    message(STATUS "Build benchmarks for the project. Benchmarks should always be found in the bench folder\n")
+    add_subdirectory(bench)
+endif ()
+
 include(cmake/Doxygen.cmake)

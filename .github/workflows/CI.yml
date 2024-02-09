@@ -52,6 +52,8 @@ jobs:
             -DJPATHGEN_ENABLE_UNIT_TESTING=ON \
             -DJPATHGEN_ENABLE_CODE_COVERAGE=ON \
             -DJPATHGEN_ENABLE_VECTORIZATION=OFF \
+            -DJPATHGEN_ENABLE_BENCHMARKS=ON \ # Only build, don't run
+            -DJPATHGEN_ENABLE_FUZZING=ON \ # Only build, don't run
             -DCMAKE_BUILD_TYPE=Release
           cmake --build build -j $(nproc) --config Release
 

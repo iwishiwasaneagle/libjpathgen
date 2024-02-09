@@ -51,8 +51,9 @@ namespace jpathgen
 
     void MultiModalBivariateGaussian::init()
     {
-      N = _mus.rows();
       Error(2 * _mus.rows() != _covs.rows(), "mus and covs must be the same length");
+      N = _mus.rows();
+      _bgs.reserve(N);
       MU _mu;
       COV _cov;
       for (int i = 0; i < N; i++)
@@ -66,7 +67,7 @@ namespace jpathgen
     double MultiModalBivariateGaussian::operator()(double x, double y)
     {
       double total = 0;
-      for (BivariateGaussian _bg : _bgs)
+      for (BivariateGaussian& _bg : _bgs)
       {
         total += _bg(x, y);
       }
