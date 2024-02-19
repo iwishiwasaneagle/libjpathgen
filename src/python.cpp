@@ -50,9 +50,15 @@ PYBIND11_MODULE(_core, m)
       .def_property_readonly("maxx", &DiscreteArgs::get_maxy);
 
   py::class_<ContinuousArgs, Args>(m, "ContinuousArgs")
-      .def(py::init<double, double, double>())
+      .def(
+          py::init<double, double, double, unsigned long>(),
+          py::arg("buffer_radius_m"),
+          py::arg("abs_err_req") = 0.0,
+          py::arg("rel_err_req") = 0.05,
+          py::arg("max_eval") = 100000)
       .def_property_readonly("abs_err_req", &ContinuousArgs::get_abs_err_req)
-      .def_property_readonly("rel_err_req", &ContinuousArgs::get_rel_err_req);
+      .def_property_readonly("rel_err_req", &ContinuousArgs::get_rel_err_req)
+      .def_property_readonly("max_eval", &ContinuousArgs::get_max_eval);
 
   m.def(
       "continuous_integration_over_polygon",
