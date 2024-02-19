@@ -16,7 +16,7 @@ add_clang_format_target()
 if (NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
 endif ()
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -fno-math-errno -ffast-math")
 message(STATUS "Started CMake for ${PROJECT_NAME} v${PROJECT_VERSION}...\n")
 
 # Set project strings
@@ -51,6 +51,10 @@ if((NOT DEFINED BUILD_PYTHON) OR DEFINED DEV)
             cubpackpp::cubpackpp
             Eigen3::Eigen
     )
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
+        target_compile_definitions(${LIB_NAME} PUBLIC NDEBUG)
+    endif ()
+
     if (${PROJECT_NAME_UPPERCASE}_ENABLE_VECTORIZATION)
         message(WARNING "Vectorization is in experimental mode and may cause unknown issues")
         include(cmake/EigenVectorization.cmake)

@@ -53,25 +53,35 @@ namespace jpathgen
     {
       Error(2 * _mus.rows() != _covs.rows(), "mus and covs must be the same length");
       N = _mus.rows();
-      _bgs.reserve(N);
-      MU _mu;
-      COV _cov;
-      for (int i = 0; i < N; i++)
-      {
-        _mu = _mus.row(i);
-        _cov = _covs.block<2, 2>(2 * i, 0);
-        _bgs.emplace_back(_mu, _cov);
-      }
+      constants.resize(N, 7);
+
+      constants.leftCols(2) = _mus;  // mu_x, mu_y
+
+      auto cov_xx = _covs.col(0)(Eigen::seq(0, 2 * N - 1, 2));
+      auto cov_yy = _covs.col(1)(Eigen::seq(0, 2 * N - 1, 2));
+      auto cov_xy = _covs(Eigen::seq(1, 2 * N, 2), 0);
+
+      auto sigma_x = cov_xx.array().sqrt();  // sigma_x
+      auto sigma_y = cov_yy.array().sqrt();  // sigma_y
+
+      auto rho = cov_xy.array() / constants.col(0).cwiseProduct(constants.col(1)).array();  // rho
+
+      constants.col(2) = sigma_x;
+      constants.col(3) = sigma_y;
+      constants.col(4) = rho;
+
+      a = 1 - constants.col(4).array().square();
+      constants.col(5) = (1 / (2 * M_PI * constants.col(2).array() * constants.col(3).array() * a.sqrt()));  // b
+      constants.col(6) = (1 / (-2 * a));                                                                     // c
     }
 
     double MultiModalBivariateGaussian::operator()(double x, double y)
     {
-      double total = 0;
-      for (BivariateGaussian& _bg : _bgs)
-      {
-        total += _bg(x, y);
-      }
-      return total / N;
+      d = (x - constants.col(0).array()) / constants.col(2).array();
+      e = (y - constants.col(1).array()) / constants.col(3).array();
+      f = (d * d) - 2 * constants.col(4).array() * d * e + e.square();
+      g = Eigen::exp(constants.col(6).array() * f);
+      return (constants.col(5).array() * g).sum() / N;
     }
 
     int MultiModalBivariateGaussian::length() const

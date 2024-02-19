@@ -13,8 +13,8 @@
 int main()
 {
   ankerl::nanobench::Bench b;
-  b.title("MMBG").minEpochIterations(1e6).unit("mmbg").performanceCounters(true);
-  jpathgen::environment::MultiModalBivariateGaussian mmbg = generate_mmbg(50);
+  b.title("MMBG").unit("mmbg").performanceCounters(true);
+  jpathgen::environment::MultiModalBivariateGaussian mmbg = generate_mmbg(1000);
   b.name("call mmbg with (double, double)").run([&] { mmbg(0.0, 0.0); });
   b.name("call mmbg with (int, int)").run([&] { mmbg(0, 0); });
 }
