@@ -42,7 +42,7 @@ namespace jpathgen
         cubpackpp::REGION_COLLECTION rc,
         ContinuousArgs* args)
     {
-      return cubpackpp::Integrate(fn, rc, args->get_abs_err_req(), args->get_rel_err_req());
+      return cubpackpp::Integrate(fn, rc, args->get_abs_err_req(), args->get_rel_err_req(), args->get_max_eval());
     }
     template double
     continuous_integration_over_region_collections(function::Function, cubpackpp::REGION_COLLECTION, ContinuousArgs*);
