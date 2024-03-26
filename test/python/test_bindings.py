@@ -1,9 +1,15 @@
 #  Copyright (c) 2024.  Jan-Hendrik Ewers
 #  SPDX-License-Identifier: GPL-3.0-only
+import textwrap
+import warnings
+
 import pytest
 import numpy as np
-from libjpathgen import MultiModalBivariateGaussian, continuous_integration_over_rectangle, \
-    discrete_integration_over_rectangle, ContinuousArgs, DiscreteArgs
+import libjpathgen
+
+from typing import Type, Callable
+import itertools
+import re
 
 
 @pytest.fixture(params=[np.eye(2)])
@@ -18,7 +24,7 @@ def mus(request):
 
 @pytest.fixture
 def mmbg(mus, covs):
-    yield MultiModalBivariateGaussian(mus, covs)
+    yield libjpathgen.MultiModalBivariateGaussian(mus, covs)
 
 
 def test_MMBG_at_00(mmbg):
@@ -64,7 +70,8 @@ def test_MMBG_vectorized_call_has_same_result(mmbg, inp):
     [(100., 200., 50., 150.), 100. * 100.],
 ])
 def test_continuous_integration_over_rectangle(bounds, exp):
-    act = continuous_integration_over_rectangle(lambda x, y: 1, *bounds, ContinuousArgs(2.5, 0.05, 0))
+    act = libjpathgen.continuous_integration_over_rectangle(lambda x, y: 1, *bounds,
+                                                            libjpathgen.ContinuousArgs(2.5, 0.05, 0))
     assert np.isclose(act, exp)
 
 
@@ -76,7 +83,44 @@ def test_continuous_integration_over_rectangle(bounds, exp):
     [(100., 150., 50., 100.), 50. * 50.],
 ])
 def testdiscrete_integration_over_rectangle(bounds, exp):
-    act = discrete_integration_over_rectangle(lambda x, y: 1, *bounds,
-                                              DiscreteArgs(2.5, 1500, 1500, bounds[0] * 0.95, bounds[1] * 1.05,
-                                                           bounds[2] * 0.95, bounds[3] * 1.05))
+    act = libjpathgen.discrete_integration_over_rectangle(lambda x, y: 1, *bounds,
+                                                          libjpathgen.DiscreteArgs(2.5, 1500, 1500, bounds[0] * 0.95,
+                                                                                   bounds[1] * 1.05,
+                                                                                   bounds[2] * 0.95, bounds[3] * 1.05))
     assert np.isclose(act, exp, rtol=1e-1)
+
+
+def get_methods(cls: type, include_base: bool = True):
+    fns_and_classes = []
+
+    if include_base:
+        fns_and_classes.append(cls)
+
+    for f in filter(lambda f: (not f.startswith("_")) and f in cls.__dict__, dir(cls)):
+        maybe_callable = cls.__dict__[f]
+
+        if isinstance(maybe_callable, type):
+            fns_and_classes.append(maybe_callable.__init__)
+        elif isinstance(maybe_callable, Callable):
+            fns_and_classes.append(maybe_callable)
+
+    return fns_and_classes
+
+
+@pytest.mark.parametrize("fn", itertools.chain.from_iterable(map(get_methods,
+                                                                 get_methods(libjpathgen, include_base=False),
+                                                                 ))
+                         )
+def test_args_and_kwargs_have_meaningful_names(fn):
+    print(textwrap.dedent(f"""
+    WARNING: Currently using __doc__ rather than inspect.getfullargspec as the latter doesn't support pybind11 fn. This 
+             may cause inaccuracies. Be warned!
+             
+     {fn.__name__=}
+     {fn.__doc__=}
+    """))
+    docs = fn.__doc__
+    assert docs is not None
+    args = re.findall(r'arg\d', docs)
+    print(f"{args=}")
+    assert len(args) == 0
