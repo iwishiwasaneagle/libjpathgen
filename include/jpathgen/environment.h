@@ -31,6 +31,7 @@ namespace jpathgen
 
      public:
       double operator()(double x, double y);
+
       BivariateGaussian(MU mu, COV cov);
     };
 
@@ -38,11 +39,13 @@ namespace jpathgen
     {
      private:
       int N;
-      std::vector<BivariateGaussian> _bgs;
       MUS _mus;
       COVS _covs;
 
       void init();
+
+      Eigen::Array<double, -1, 1> a, d, e, f, g;
+      Eigen::Matrix<double, -1, 7> constants;
 
      public:
       const MUS& getMus() const;
