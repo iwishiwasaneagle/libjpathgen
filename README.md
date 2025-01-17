@@ -19,11 +19,15 @@ cd libjpathgen
 cmake \
     -B build
     -DCMAKE_BUILD_TYPE=Release \
-    ..
+    .
 cmake \
     --build build \
     --target install
 ```
+
+With conda, be sure to add `-DCMAKE_INSTALL_PREFIX=${CONDA_PREFIX} -DCMAKE_PREFIX_PATH=${CONDA_PREFIX}` to ensure that
+it is correctly installed in the env.
+
 
 ### Dependencies
 

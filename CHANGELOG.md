@@ -2,6 +2,98 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.3.3] - 2024-03-26
+
+### Documentation
+
+- Include mention on conda prefixes
+- Ensure pybind11 wrappings have appropriate variable names that show up in python
+
+### Testing
+
+- Automatic discovery of callables, and testing of their docstrings to ensure that variables have useful names
+
+## [0.3.2] - 2024-02-19
+
+### Features
+
+- Add max_eval option for continuous integration
+
+## [0.3.1] - 2024-02-01
+
+### Bug Fixes
+
+- Unbound variable error
+- Better directory resolution to point to where the script resides (src dir)
+- Refactor to use flag-based system
+- Give root permissions to install in GHA
+- Install the C++ lib after testing
+- Cibuildwheel not finding libraries
+
+### Features
+
+- Refactor to use scikit-build-core and cibuildwheels, as well as uploading to PyPi
+- Auto-generated version
+- GPL3.0 license
+- Generate changelog for release
+
+## [0.3.0] - 2024-01-30
+
+### Bug Fixes
+
+- Extern not lib
+- -e not appropriate for compiled libraries
+- Explicitly instantiate remaining templated function
+- Improper formatting in CI
+- Use geometry:: functions rather than re-writting
+- Refactor some tests to not generate as many variations
+- Segfault caused by null pointer dereference after suing std::move
+- Better bounds calculations taking absolute offsets into account
+- Ensure pybind11>=2.11.0 is installed for python 3.12 compatibility
+
+### Features
+
+- Also run pytest tests automatically
+- Simultaneous path integration. Useful for swarm behavior
+- Re-work of API
+- Discrete integration
+
+### Miscellaneous Tasks
+
+- Build python after C++ for better debugging
+
+### Refactor
+
+- Use templates with explicit instantiations correctly
+- Optimize CMakeLists.txt
+
+### Testing
+
+- Integration over area containing 2D pulse around (0,0)
+- Actually run pytest tests
+- Fully test the discrete and continuous paths integration function
+- Continuous and discrete rectangle integration
+
+### Reafctor
+
+- First stage of breaking some of the larger files up
+
+## [0.2.0] - 2023-11-24
+
+### Bug Fixes
+
+- Geos@3.12.0 (60edf0e5f) renamed CoordinateArraySequence to CoordinateSequence
+- Pybind11 only supports py3.11 as of v2.10, and py3.12 as of v2.11
+
+### Miscellaneous Tasks
+
+- Update cubpackpp to latest version
+- Set minimum version for libgeos to be 3.11.1
+
+### Testing
+
+- Broader testing setup using matrix
+
 ## [0.1.0] - 2023-09-26
 
 ### Bug Fixes
@@ -39,6 +131,7 @@ All notable changes to this project will be documented in this file.
 - Remove bullet3 for now. Unused
 - Be verbose about python build type (default=Release)
 - Separate BG from MMBG logic to cache often used variables
+- Update changelog for v0.1.0 [skip pre-commit.ci]
 
 ### Testing
 

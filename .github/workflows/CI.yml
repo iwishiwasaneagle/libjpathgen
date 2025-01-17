@@ -12,13 +12,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        include:
-          - os: "ubuntu-22.04"
-            python: "3.12"
-          - os: "ubuntu-22.04"
-            python: "3.11"
-          - os: "ubuntu-22.04"
-            python: "3.10"
+        os: ["ubuntu-22.04", "ubuntu-24.04"]
+        python: ["3.10", "3.11", "3.12", "3.13"]
     steps:
 
       - uses: actions/checkout@v4
@@ -74,10 +69,10 @@ jobs:
       - name: Prepare files for codecov
         run: |
           lcov --capture --directory build --output-file coverage.info
-          lcov --remove coverage.info --output-file coverage.info '/usr/*' '*/test/*' '*/extern/*'
+          lcov --remove coverage.info --output-file coverage.info '/usr/*' '*/test/*'
 
       - name: Upload code test coverage report
-        uses: codecov/codecov-action@v3.1.5
+        uses: codecov/codecov-action@v5.1.2
         if: ${{ (github.actor != 'dependabot[bot]') && ( !env.ACT ) }}
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

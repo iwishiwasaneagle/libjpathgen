@@ -34,6 +34,7 @@ namespace jpathgen
      protected:
       const double _abs_err_req;
       const double _rel_err_req;
+      const unsigned long _max_eval;
 
      public:
       [[nodiscard]] double get_abs_err_req() const
@@ -44,11 +45,17 @@ namespace jpathgen
       {
         return _rel_err_req;
       }
+      [[nodiscard]] unsigned long get_max_eval() const
+      {
+        return _max_eval;
+      }
 
-      explicit ContinuousArgs(double buffer_radius_m, double abs_err_req = 0, double rel_err_req = 0.05)
+      explicit ContinuousArgs(double buffer_radius_m, double abs_err_req = 0, double rel_err_req = 0.05, unsigned long max_eval=100000)
           : Args(buffer_radius_m),
             _abs_err_req(abs_err_req),
-            _rel_err_req(rel_err_req){};
+            _rel_err_req(rel_err_req),
+            _max_eval(max_eval)
+      {};
     };
 
     class DiscreteArgs : public Args
