@@ -97,14 +97,20 @@ namespace jpathgen
             _maxx(maxx),
             _miny(miny),
             _maxy(maxy){};
-      explicit DiscreteArgs(double buffer_radius_m, int N, int M,geos::geom::Envelope envelope, double rel_offset = 0.0, double abs_offset = 0.0)
+      explicit DiscreteArgs(
+          double buffer_radius_m,
+          int N,
+          int M,
+          geos::geom::Envelope envelope,
+          double rel_offset = 0.0,
+          double abs_offset = 0.0)
           : Args(buffer_radius_m),
             _N(N),
             _M(M),
-            _minx(envelope.getMinX()*(1-rel_offset)-abs_offset),
-            _maxx(envelope.getMaxX()*(1+rel_offset)+abs_offset),
-            _miny(envelope.getMinY()*(1-rel_offset)-abs_offset),
-            _maxy(envelope.getMaxY()*(1+rel_offset)+abs_offset){};
+            _minx(envelope.getMinX() * (1 - rel_offset) - abs_offset),
+            _maxx(envelope.getMaxX() * (1 + rel_offset) + abs_offset),
+            _miny(envelope.getMinY() * (1 - rel_offset) - abs_offset),
+            _maxy(envelope.getMaxY() * (1 + rel_offset) + abs_offset){};
     };
 
     template<typename FUNC, typename COORDS>

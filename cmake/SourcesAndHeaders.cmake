@@ -30,3 +30,12 @@ set(fuzz_sources
         variable_length_path.cpp
         variable_length_gmm_and_path.cpp
 )
+
+set(bench_sources
+        mmbg_single_path_integration.cpp
+        mmbg_create.cpp
+        mmbg_call.cpp
+)
+set(bench_headers
+        include/generate.h
+)
